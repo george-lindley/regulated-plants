@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Research Access Request Received · Regulated Plants Database{% endblock %}
+
+{% block content %}
+<section class="auth-panel">
+    {% set page_label = "Researchers" %}
+    {% include "partials/page_eyebrow.html" %}
+    <h1 class="page-title">Research Access Request Received</h1>
+    <p class="lead">
+        {% if pending %}
+            The research access request for {{ email }} is still pending review.
+        {% else %}
+            The research access request for {{ email }} has been submitted for review.
+        {% endif %}
+    </p>
+    <p>
+        We will email you when the account is approved.
+    </p>
+</section>
+{% endblock %}

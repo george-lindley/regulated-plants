@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage Hero Rework Options</title>
+    <style>
+        :root {
+            --ink: #20242a;
+            --navy: #15234a;
+            --muted: #68717d;
+            --line: #dce1e6;
+            --paper: #ffffff;
+            --wash: #f6f7f8;
+            --green: #2e6f4e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #eef1f3;
+            color: var(--ink);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.45;
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 0.95rem 2rem;
+            background: #212529;
+            color: #fff;
+        }
+
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.4rem;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .prototype-page {
+            width: min(1180px, calc(100vw - 40px));
+            margin: 2rem auto 4rem;
+        }
+
+        .intro {
+            margin-bottom: 1.5rem;
+        }
+
+        .intro h1 {
+            margin: 0 0 0.35rem;
+            font-size: 1.6rem;
+        }
+
+        .intro p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .option {
+            margin: 0 0 2rem;
+            background: var(--paper);
+            border: 1px solid var(--line);
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--line);
+            background: var(--wash);
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .hero {
+            padding: 2.2rem 2rem 1.35rem;
+            background: var(--paper);
+        }
+
+        .eyebrow {
+            margin: 0 0 0.55rem;
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .hero h2 {
+            margin: 0;
+            color: var(--ink);
+            font-size: clamp(2.3rem, 4vw, 3.65rem);
+            line-height: 1.02;
+            letter-spacing: 0;
+        }
+
+        .lede {
+            max-width: 780px;
+            margin: 1rem 0 0;
+            color: var(--navy);
+            font-size: 1.25rem;
+            font-weight: 300;
+        }
+
+        .authority {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
+        .authority img {
+            max-height: 34px;
+            max-width: 150px;
+            object-fit: contain;
+        }
+
+        .authority .divider {
+            width: 1px;
+            height: 30px;
+            background: var(--line);
+        }
+
+        .facts-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 1.5rem;
+            margin-top: 1.4rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .facts-inline span,
+        .small-meta span {
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .facts-inline strong,
+        .small-meta strong {
+            margin-right: 0.3rem;
+            color: var(--navy);
+            font-size: 1rem;
+        }
+
+        .map-preview {
+            height: 116px;
+            margin-top: 1.4rem;
+            border: 1px solid var(--line);
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.72)),
+                url("../app/static/img/homepage_screenshot.png");
+            background-position: center 54%;
+            background-size: cover;
+        }
+
+        .map-caption {
+            margin: 0.8rem 0 0;
+            color: var(--ink);
+            font-size: 0.98rem;
+        }
+
+        .toggle-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 1.4rem;
+            align-items: center;
+            margin-top: 0.9rem;
+        }
+
+        .toggle-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--navy);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            width: 38px;
+            height: 20px;
+            border-radius: 999px;
+            background: var(--navy);
+            flex: 0 0 auto;
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--paper);
+        }
+
+        .definition-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .record-panel {
+            border-left: 2px solid var(--ink);
+            padding-left: 1rem;
+        }
+
+        .record-panel h3 {
+            margin: 0 0 0.8rem;
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .record-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 0.75rem;
+            padding: 0.45rem 0;
+            border-top: 1px solid var(--line);
+            font-size: 0.95rem;
+        }
+
+        .record-row span:first-child {
+            color: var(--muted);
+        }
+
+        .logos-row {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        .logos-row img {
+            max-height: 38px;
+            max-width: 160px;
+            object-fit: contain;
+        }
+
+        .partner-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.9rem;
+            margin-top: 1rem;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .partner-line img {
+            max-height: 34px;
+            max-width: 150px;
+            object-fit: contain;
+        }
+
+        .partner-line .divider {
+            width: 1px;
+            height: 28px;
+            background: var(--line);
+        }
+
+        .masthead {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1.5rem;
+            align-items: end;
+            padding-bottom: 1.1rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .release-line {
+            margin-top: 1.2rem;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .release-line strong {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .library-grid {
+            max-width: 840px;
+        }
+
+        .dictionary-line {
+            margin: 1rem 0 0;
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.12rem;
+        }
+
+        .dictionary-line em {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .catalogue-strip {
+            margin-top: 1.25rem;
+            border: 1px solid var(--line);
+            background: var(--paper);
+        }
+
+        .catalogue-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.45rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--wash);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .catalogue-meta-item {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .catalogue-meta-separator {
+            color: var(--muted);
+            opacity: 0.55;
+            padding: 0 0.25rem;
+        }
+
+        .compact-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+
+        .catalogue-release-row div,
+        .compact-strip div {
+            padding: 0.75rem 1rem;
+            border-right: 1px solid var(--line);
+        }
+
+        .catalogue-release-row div:last-child,
+        .compact-strip div:last-child {
+            border-right: 0;
+        }
+
+        .catalogue-release-row span,
+        .compact-strip span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .catalogue-release-row span {
+            display: inline;
+            flex: 0 0 auto;
+        }
+
+        .catalogue-meta-label {
+            display: inline;
+            flex: 0 0 auto;
+            color: var(--muted);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .catalogue-release-row strong,
+        .compact-strip strong {
+            display: block;
+            margin-top: 0.25rem;
+            color: var(--navy);
+            font-size: 1.05rem;
+            font-weight: 650;
+        }
+
+        .catalogue-release-row strong {
+            display: inline;
+            margin-top: 0;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 550;
+            overflow-wrap: normal;
+        }
+
+        .catalogue-meta-value {
+            display: inline;
+            margin-top: 0;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 550;
+            overflow-wrap: normal;
+        }
+
+        .catalogue-partners {
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0 !important;
+        }
+
+        .catalogue-partners img {
+            max-height: 21px;
+            max-width: 100px;
+            object-fit: contain;
+        }
+
+        .rich-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .rich-stat {
+            min-height: 118px;
+            padding: 0.85rem 1rem;
+            border-right: 1px solid var(--line);
+        }
+
+        .rich-stat:last-child {
+            border-right: 0;
+        }
+
+        .rich-stat-title {
+            display: block;
+            margin-bottom: 0.65rem;
+            color: var(--muted);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .rich-stat-line {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .rich-stat-value {
+            color: var(--navy);
+            font-size: 1.55rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .rich-stat-unit {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .rich-stat-name {
+            display: block;
+            color: var(--navy);
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.18;
+        }
+
+        .rich-stat-common,
+        .rich-stat-meta {
+            display: block;
+            margin-top: 0.25rem;
+            color: var(--text-medium);
+            font-size: 0.92rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .rich-stat-meta {
+            font-weight: 500;
+        }
+
+        @media (max-width: 800px) {
+            .site-nav,
+            .nav-links,
+            .authority,
+            .logos-row,
+            .facts-inline {
+                flex-wrap: wrap;
+            }
+
+            .definition-grid,
+            .masthead,
+            .library-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .catalogue-release-row,
+            .compact-strip,
+            .rich-stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .catalogue-release-row {
+                grid-template-columns: 1fr;
+            }
+
+            .catalogue-release-row div {
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .catalogue-release-row div:last-child {
+                border-bottom: 0;
+            }
+
+            .rich-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .rich-stat {
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+            }
+
+            .rich-stat:last-child {
+                border-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="site-nav">
+        <div class="brand">Regulated Plants</div>
+        <div class="nav-links">
+            <span>Species</span>
+            <span>Blog</span>
+            <span>Method</span>
+            <span>Enterprise</span>
+            <span>Researchers</span>
+            <span>About</span>
+        </div>
+    </nav>
+
+    <main class="prototype-page">
+        <div class="intro">
+            <h1>Homepage Hero Rework Prototypes</h1>
+            <p>Four directions for a quieter, more authoritative database-first homepage.</p>
+        </div>
+
+        <section class="option">
+            <div class="option-label">
+                <span>Option 1</span>
+                <span>Reference Header + Inline Facts</span>
+            </div>
+            <div class="hero">
+                <p class="eyebrow">Home</p>
+                <div class="masthead">
+                    <div>
+                        <h2>Regulated Plants Database</h2>
+                        <p class="lede">A versioned public reference database of regulated invasive plants and noxious weeds.</p>
+                    </div>
+                    <div class="authority" aria-label="Institutional backing">
+                        <img src="../app/static/img/UNU-INWEH_LOGO_NV.svg" alt="UNU-INWEH">
+                        <span class="divider"></span>
+                        <img src="../app/static/img/UCD-plant-science-logo.png" alt="University of California Davis Plant Sciences">
+                    </div>
+                </div>
+                <div class="facts-inline">
+                    <div><strong>20260528T124621Z</strong><span>Data release</span></div>
+                    <div><strong>2,047</strong><span>Taxa monitored</span></div>
+                    <div><strong>86</strong><span>Jurisdictions</span></div>
+                    <div><strong>5,523</strong><span>Regulation rows</span></div>
+                </div>
+                <p class="map-caption">Explore the map by regulation level: regional, national, and international.</p>
+                <div class="map-preview"></div>
+            </div>
+        </section>
+
+        <section class="option">
+            <div class="option-label">
+                <span>Option 2</span>
+                <span>Dictionary Entry + Record Panel</span>
+            </div>
+            <div class="hero">
+                <div class="definition-grid">
+                    <div>
+                        <p class="eyebrow">Reference database</p>
+                        <h2>Regulated Plants</h2>
+                        <p class="dictionary-line">
+                            <strong>regulated plant</strong> <em>noun</em>:
+                            a plant listed by a jurisdiction as invasive, noxious, prohibited,
+                            restricted, or otherwise subject to biosecurity regulation.
+                        </p>
+                        <p class="lede">
+                            Official plant regulation records compiled into a versioned public database.
+                        </p>
+                        <div class="logos-row">
+                            <img src="../app/static/img/UNU-INWEH_LOGO_NV.svg" alt="UNU-INWEH">
+                            <img src="../app/static/img/UCD-plant-science-logo.png" alt="University of California Davis Plant Sciences">
+                        </div>
+                    </div>
+                    <aside class="record-panel">
+                        <h3>Current Database Record</h3>
+                        <div class="record-row"><span>Release</span><strong>20260528T124621Z</strong></div>
+                        <div class="record-row"><span>Published</span><strong>2026-05-28</strong></div>
+                        <div class="record-row"><span>Taxa</span><strong>2,047</strong></div>
+                        <div class="record-row"><span>Jurisdictions</span><strong>86</strong></div>
+                        <div class="record-row"><span>Rows</span><strong>5,523</strong></div>
+                    </aside>
+                </div>
+                <div class="map-preview"></div>
+            </div>
+        </section>
+
+        <section class="option">
+            <div class="option-label">
+                <span>Option 3</span>
+                <span>Institution-Led Masthead</span>
+            </div>
+            <div class="hero">
+                <div class="authority" aria-label="Institutional backing">
+                    <span>Published with</span>
+                    <img src="../app/static/img/UNU-INWEH_LOGO_NV.svg" alt="UNU-INWEH">
+                    <span class="divider"></span>
+                    <img src="../app/static/img/UCD-plant-science-logo.png" alt="University of California Davis Plant Sciences">
+                </div>
+                <p class="eyebrow" style="margin-top:1.4rem;">Versioned public data product</p>
+                <h2>Regulated Plants Database</h2>
+                <p class="lede">
+                    Official invasive-plant and noxious-weed regulation records, maintained as a public reference dataset.
+                </p>
+                <p class="release-line">
+                    Current release <strong>20260528T124621Z</strong>, published <strong>2026-05-28</strong>.
+                    Covers <strong>2,047 taxa</strong> across <strong>86 jurisdictions</strong>.
+                </p>
+                <div class="map-preview"></div>
+            </div>
+        </section>
+
+        <section class="option">
+            <div class="option-label">
+                <span>Option 4</span>
+                <span>Catalogue Line Layout</span>
+            </div>
+            <div class="hero">
+                <div class="library-grid">
+                    <div class="library-copy">
+                        <p class="eyebrow">Home</p>
+                        <h2>Regulated Plants Database</h2>
+                        <p class="lede">
+                            A public reference catalogue of regulated invasive plants and noxious weeds.
+                        </p>
+                    </div>
+                </div>
+                <div class="catalogue-strip">
+                    <div class="catalogue-meta-row">
+                        <span class="catalogue-meta-item">
+                            <span class="catalogue-meta-label">Release</span>
+                            <strong class="catalogue-meta-value">20260528T124621Z</strong>
+                        </span>
+                        <span class="catalogue-meta-separator" aria-hidden="true">·</span>
+                        <span class="catalogue-meta-item">
+                            <span class="catalogue-meta-label">Published</span>
+                            <strong class="catalogue-meta-value">2026-05-28</strong>
+                        </span>
+                        <span class="catalogue-meta-separator" aria-hidden="true">·</span>
+                        <span class="catalogue-meta-item catalogue-partners">
+                            <span class="catalogue-meta-label">Publishing partners</span>
+                            <img src="../app/static/img/UNU-INWEH_LOGO_NV.svg" alt="UNU-INWEH">
+                            <img src="../app/static/img/UCD-plant-science-logo.png" alt="University of California Davis Plant Sciences">
+                        </span>
+                    </div>
+                    <div class="rich-stats-grid">
+                        <div class="rich-stat">
+                            <span class="rich-stat-title">Regulatory Coverage</span>
+                            <div class="rich-stat-line">
+                                <span class="rich-stat-value">86</span>
+                                <span class="rich-stat-unit">Jurisdictions</span>
+                            </div>
+                            <div class="rich-stat-line">
+                                <span class="rich-stat-value">2,047</span>
+                                <span class="rich-stat-unit">Taxa monitored</span>
+                            </div>
+                        </div>
+                        <div class="rich-stat">
+                            <span class="rich-stat-title">Latest Country Added</span>
+                            <span class="rich-stat-name">England, United Kingdom</span>
+                        </div>
+                        <div class="rich-stat">
+                            <span class="rich-stat-title">Most Regulated Taxa</span>
+                            <span class="rich-stat-name">Cirsium arvense</span>
+                            <span class="rich-stat-common">Canada Thistle</span>
+                            <span class="rich-stat-meta">48 jurisdictions</span>
+                        </div>
+                        <div class="rich-stat">
+                            <span class="rich-stat-title">Most Regulated Jurisdiction</span>
+                            <span class="rich-stat-name">Western Australia</span>
+                            <span class="rich-stat-common">Australia</span>
+                            <span class="rich-stat-meta">870 species regulated</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="toggle-row" aria-label="Regulation level toggles">
+                    <span class="toggle-item"><span class="switch" aria-hidden="true"></span>Regional Regulations</span>
+                    <span class="toggle-item"><span class="switch" aria-hidden="true"></span>National Regulations</span>
+                    <span class="toggle-item"><span class="switch" aria-hidden="true"></span>International Regulations</span>
+                </div>
+                <div class="map-preview"></div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

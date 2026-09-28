@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set page_label = "Home" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">Regulated Plants Database</h1>
+<p class="lead mb-4">
+    A public reference catalogue of regulated invasive plants and noxious weeds.
+</p>
+
+<section class="home-catalogue mb-4" id="home-highlights" aria-label="Database summary">
+    <div class="catalogue-meta-row">
+        <span class="catalogue-meta-item">
+            <span class="catalogue-meta-label">Release</span>
+            <strong class="catalogue-meta-value" id="highlight-release-version">
+                {{ release_metadata.version or "--" }}
+            </strong>
+        </span>
+        <span class="catalogue-meta-separator" aria-hidden="true">·</span>
+        <span class="catalogue-meta-item">
+            <span class="catalogue-meta-label">Published</span>
+            <strong class="catalogue-meta-value" id="highlight-release-date">
+                {{ release_metadata.date_label or "Date pending" }}
+            </strong>
+        </span>
+        <span class="catalogue-meta-separator" aria-hidden="true">·</span>
+        <span class="catalogue-meta-item catalogue-partners">
+            <span class="catalogue-meta-label">Publishing partners</span>
+            <img src="{{ url_for('static', filename='img/UNU-INWEH_LOGO_NV.svg') }}" alt="UNU-INWEH">
+            <img src="{{ url_for('static', filename='img/UCD-plant-science-logo.png') }}" alt="UC Davis Department of Plant Sciences">
+        </span>
+    </div>
+
+    <div class="rich-stats-grid">
+        <div class="rich-stat">
+            <span class="rich-stat-title">Regulatory Coverage</span>
+            <div class="rich-stat-line">
+                <span class="rich-stat-value" id="highlight-jurisdictions">--</span>
+                <span class="rich-stat-unit">jurisdictions</span>
+            </div>
+            <div class="rich-stat-line">
+                <span class="rich-stat-value" id="highlight-species">--</span>
+                <span class="rich-stat-unit">taxa monitored</span>
+            </div>
+        </div>
+
+        <div class="rich-stat">
+            <span class="rich-stat-title">Latest Country Added</span>
+            <a href="#" id="highlight-latest-country-link" class="highlight-link rich-stat-link">
+                <span class="rich-stat-name" id="highlight-latest-country">--</span>
+            </a>
+        </div>
+
+        <div class="rich-stat">
+            <span class="rich-stat-title">Most Regulated Taxa</span>
+            <a href="#" id="highlight-top-species-link" class="highlight-link rich-stat-link" target="_blank" rel="noopener">
+                <span class="rich-stat-name" id="highlight-top-species-name">--</span>
+                <span class="rich-stat-common" id="highlight-top-species-common">--</span>
+            </a>
+            <span class="rich-stat-meta">
+                <span id="highlight-top-species-count">--</span> jurisdictions
+            </span>
+        </div>
+
+        <div class="rich-stat">
+            <span class="rich-stat-title">Most Regulated Jurisdiction</span>
+            <a href="#" id="highlight-top-jurisdiction-link" class="highlight-link rich-stat-link">
+                <span class="rich-stat-name" id="highlight-top-jurisdiction-name">--</span>
+                <span class="rich-stat-common" id="highlight-top-jurisdiction-country">--</span>
+            </a>
+            <span class="rich-stat-meta">
+                <span id="highlight-top-jurisdiction-count">--</span> species regulated
+            </span>
+        </div>
+    </div>
+</section>
+
+<div class="toggle-controls">
+    <div class="d-flex flex-column flex-md-row gap-2 gap-md-4 align-items-start align-items-md-start">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="regionToggle" checked>
+            <label class="form-check-label toggle-label" for="regionToggle">
+                Regional Regulations
+            </label>
+        </div>
+
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="nationalToggle" checked>
+            <label class="form-check-label toggle-label" for="nationalToggle">
+                National Regulations
+            </label>
+        </div>
+
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="internationalToggle" checked>
+            <label class="form-check-label toggle-label" for="internationalToggle">
+                International Regulations
+            </label>
+        </div>
+
+        <div id="toggleError" class="toggle-error d-none">
+            Please select at least one regulation level
+        </div>
+    </div>
+</div>
+
+<div class="map-wrapper">
+    <div id="map" class="rounded shadow"></div>
+</div>
+
+<div class="results-container">
+    <div id="state-species" class="d-none">
+        <h3 id="state-title" class="mb-3"></h3>
+        <div id="state-warning" class="sample-warning d-none" role="note"></div>
+        <div id="state-subtitle" class="text-muted small mb-3"></div>
+        <div class="table-responsive">
+            <table id="species-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Scientific Name</th>
+                        <th>Common Name</th>
+                        <th>Family</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5">
+    <h2>Project Description</h2>
+    <p>
+        This database brings together official records of plant species regulated as
+        invasive plants, noxious weeds, or related biosecurity concerns across regional,
+        national, and international jurisdictions. It is designed to support clearer
+        comparison of invasive-plant regulations across countries for research,
+        agricultural decision-making, policy analysis, and public reference.
+    </p>
+    <p class="mb-0">
+        <a href="{{ url_for('about.index') }}">Find out more</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script defer src="{{ url_for('static', filename='js/home_highlights.js') }}"></script>
+<script>
+    window.MAP_CONFIG = window.MAP_CONFIG || {};
+    window.MAP_CONFIG.geojsonPath = "{{ geojson_path }}";
+    window.MAP_CONFIG.dataVersion = {{ data_version|tojson }};
+    window.MAP_CONFIG.enterpriseAccessUrl = {{ url_for('api_page.api_index')|tojson }};
+    window.MAP_CONFIG.oozrBaseUrl = "{{ oozr_base_url }}";
+    window.MAP_CONFIG.oozrProjectSlug = "{{ oozr_project_slug }}";
+    window.MAP_CONFIG.oozrMetricsEnabled = {{ 'true' if oozr_metrics_enabled else 'false' }};
+</script>
+<script defer src="{{ url_for('static', filename='js/map_config.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% endblock %}

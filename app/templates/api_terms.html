@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}API Terms - Regulated Plants Database{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/api.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set page_label = "Enterprise" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">API Terms Summary</h1>
+<p class="lead mb-4">
+    Key terms for Enterprise access to the Regulated Plants API, provided commercially by Menacon Ltd.
+</p>
+
+<section class="api-terms-notice mb-4">
+    <p class="mb-2"><strong>Draft pending legal review.</strong></p>
+    <p class="mb-0">
+        This public page is a summary for transparency. Final Enterprise access
+        is subject to written access terms issued by Menacon before access is
+        activated. These may be provided by email, quote, invoice, order form,
+        payment link, access confirmation, or signed agreement. This summary is
+        not legal advice.
+    </p>
+</section>
+
+<section class="api-terms-summary">
+    <p class="api-terms-meta">Last updated: June 9, 2026</p>
+
+    <div class="api-terms-summary-grid">
+        <article class="api-card">
+            <h2>Commercial Provider</h2>
+            <p>
+                Commercial API access is provided by Menacon Ltd, company number
+                17252141, registered in England and Wales, registered office
+                17 Rees Road, Larkhill, Salisbury, England, SP4 8FT.
+            </p>
+            <p>
+                The Regulated Plants Database project, UC Davis, UNU-INWEH,
+                contributors, funders, regulators, and source authorities are
+                not parties to Menacon's Enterprise API access terms.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Manual Access</h2>
+            <p>
+                Enterprise access is manually approved and token protected.
+                Pricing, quotas, support, renewal, payment, and access period
+                are handled by quote, invoice, payment link, access
+                confirmation, or separate agreement.
+            </p>
+            <p>
+                No self-serve billing or automatic subscription signup is
+                currently offered through this website.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>No Legal Advice</h2>
+            <p>
+                The API is an informational reference tool only. It is not legal
+                advice, a legal opinion, a regulatory determination, or a
+                substitute for review by qualified counsel or the relevant
+                regulatory authority.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Customer Responsibility</h2>
+            <p>
+                Customers remain responsible for products, listings, sales,
+                shipping, customer communications, compliance workflow, legal
+                review, and final decisions.
+            </p>
+            <p>
+                Customers decide how to interpret API responses, including
+                whether to allow, block, delay, delist, restrict, escalate, or
+                manually review a product, listing, order, or shipment.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Data Limitations</h2>
+            <p>
+                The API reports records found in the current dataset. Plant
+                taxonomy, common names, jurisdiction boundaries, legal
+                classifications, source URLs, and regulatory materials can
+                change and may be incomplete, delayed, ambiguous, or outdated.
+            </p>
+            <p>
+                The API may produce false positives, false negatives, ambiguous
+                matches, incomplete source coverage, or stale results.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Source Evidence</h2>
+            <p>
+                Source URLs, authority names, classifications, notes, and source
+                metadata are provided for traceability only. Their inclusion
+                does not imply endorsement, approval, warranty, or verification
+                of a customer's products, listings, shipments, or compliance
+                decisions.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>API Keys And Security</h2>
+            <p>
+                API keys are confidential credentials. Customers must keep keys
+                secure, limit access to authorized systems and personnel, and
+                must not share keys with third parties or embed them in public
+                client-side code.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Use Restrictions</h2>
+            <p>
+                Enterprise API responses may be used for approved operational
+                workflows such as catalog review, checkout controls,
+                fulfillment review, restricted-shipping logic, seller support,
+                customer-support records, and compliance audit records.
+            </p>
+            <p>
+                API responses must not be used to reconstruct, mirror, bulk
+                replicate, or create a substitute for the Regulated Plants
+                Database or a competing plant regulatory data product.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Privacy And Request Data</h2>
+            <p>
+                The API is designed for plant queries and destination
+                jurisdiction fields such as country and region/state/province.
+                Customers should not submit customer names, street addresses,
+                email addresses, phone numbers, payment information, or other
+                unnecessary personal data.
+            </p>
+            <p>
+                See the <a href="{{ url_for('home.privacy') }}">Privacy notice</a>
+                for information about account, contact, and API administration data.
+            </p>
+        </article>
+
+        <article class="api-card">
+            <h2>Warranty And Liability</h2>
+            <p>
+                API access and responses are provided on an "as is" and "as
+                available" basis, without a guarantee that every regulated plant,
+                jurisdiction, law, classification, or source material will be
+                identified.
+            </p>
+            <p>
+                Menacon's full written terms include warranty disclaimers,
+                liability limits, indemnity terms, suspension rights, governing
+                law, and other contract provisions.
+            </p>
+        </article>
+    </div>
+
+    <section class="api-access-panel mt-4">
+        <h2 class="h5">Full Written Terms</h2>
+        <p>
+            This public page is a summary only and is not the complete
+            Enterprise API contract. The full Enterprise API terms are
+            maintained separately for counsel review and customer access
+            confirmation. Menacon will provide the applicable written terms
+            before paid access is confirmed, and with any quote, invoice,
+            payment link, access confirmation, order form, or signed agreement.
+        </p>
+        <p>
+            Enterprise access is not active until Menacon approves the request,
+            issues written access terms, and provides an API token.
+        </p>
+        <p class="mb-0">
+            Questions about Enterprise API access or these terms can be sent
+            through the <a href="{{ url_for('about.index', subject='api_access') }}#contact">contact form</a>.
+        </p>
+    </section>
+</section>
+{% endblock %}

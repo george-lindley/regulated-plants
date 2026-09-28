@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+weeds_env/
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+
+# raw data files (keep private by default)
+preprocessing_utils/data/*.csv
+preprocessing_utils/data/**/*.csv
+app/templates/token 
+scripts/test_regulated_plants_api.py
+# cached remote artifacts
+data_cache/

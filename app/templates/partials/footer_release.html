@@ -1,0 +1,6 @@
+{% if release_metadata and release_metadata.version %}
+<p class="footer-release mb-1">
+    Data release {{ release_metadata.version }}
+    · <a href="{{ url_for('method.index') }}#data-versions">Version history</a>
+</p>
+{% endif %}

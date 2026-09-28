@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+{% endblock %}
+{% block content %}
+<!-- Blog Post Header -->
+<article class="blog-post blog-post--single">
+    <header class="post-header">
+        {% set page_label = "Blog" %}
+        {% include "partials/page_eyebrow.html" %}
+        <h1 class="page-title">{{ post.title }}</h1>
+        <div class="post-meta">
+            <strong>Published:</strong> {{ post.date }}
+            <span class="mx-2">|</span>
+            <strong>Author:</strong> {{ post.author }}
+        </div>
+        
+        {% if post.tags %}
+        <div class="post-tags mt-3">
+            {% for tag in post.tags %}
+                <a href="{{ url_for('blog.index', tag=tag) }}" 
+                    class="blog-tag">
+                    {{ tag }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- Add feature image if exists -->
+        {% if post.image %}
+        <div class="post-feature-image">
+            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid rounded">
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- Blog Post Content -->
+    <div class="post-content">
+        {{ post.content|safe }}
+        
+        {% for image_url in post.image_urls %}
+            <div class="text-center my-4">
+                <img src="{{ image_url }}" alt="Image" class="img-fluid rounded">
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Navigation -->
+    <footer class="post-footer">
+        <div class="d-flex justify-content-between w-100">
+            <a href="{{ url_for('blog.index') }}" 
+            class="btn-read-more">
+                ← Back to Blog
+            </a>
+            
+            <a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.url|urlencode }}"
+            class="btn-read-more"
+            target="_blank">
+                Share on X
+            </a>
+        </div>
+    </footer>
+</article>
+
+<!-- SEO Metadata -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ post.title }}",
+    "datePublished": "{{ post.date }}",
+    "author": {
+        "@type": "Person",
+        "name": "{{ post.author }}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Regulated Plants Database"
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ request.url }}"
+    },
+    "description": "{{ post.excerpt }}",
+    "keywords": "{{ post.tags|join(', ') if post.tags else '' }}"
+}
+</script>
+{% endblock %}

@@ -1,0 +1,976 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Regulated Plants Enterprise API",
+    "summary": "Enterprise regulatory lookup API for plant ecommerce and catalog workflows.",
+    "description": "The Regulated Plants Enterprise API reports whether a matched plant species has a regulation record in a requested jurisdiction. The API is intentionally conservative: it reports dataset records and authority details, but does not provide legal advice and does not say a plant is legally allowed, banned, or prohibited to buy.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Regulated Plants"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://regulatedplants.unu.edu",
+      "description": "Production API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Regulatory checks",
+      "description": "Decision-oriented plant regulation checks for a destination jurisdiction."
+    },
+    {
+      "name": "Plant matching",
+      "description": "Plant name lookup across scientific names, common names, and synonyms."
+    },
+    {
+      "name": "Jurisdiction matching",
+      "description": "Jurisdiction lookup for clients that want exact dataset identifiers."
+    },
+    {
+      "name": "System",
+      "description": "Operational health checks."
+    }
+  ],
+  "paths": {
+    "/v1/regulatory-check": {
+      "get": {
+        "tags": ["Regulatory checks"],
+        "operationId": "getRegulatoryCheck",
+        "summary": "Check whether a plant is regulated in a jurisdiction",
+        "description": "Checks the current dataset for regulation records matching a plant name and destination jurisdiction. Most clients should send `plant_query` plus `country` and `region` using ordinary names or ISO codes, such as `United States` and `California`. If the plant name is ambiguous or misspelled beyond a safe confidence threshold, the API returns suggestions instead of making a decision.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plant_query",
+            "in": "query",
+            "required": true,
+            "description": "Scientific name, common name, synonym, or near-spelling of the plant.",
+            "example": "Cortaderia jubata",
+            "schema": {
+              "type": "string",
+              "examples": ["Cortaderia jubata", "pampas grass", "Abutilon theophrsti"]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country name or ISO country code. Examples: `US`, `United States`, `CA`, `Canada`.",
+            "example": "US",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "description": "State, province, region name, or ISO subdivision suffix. Examples: `CA`, `California`, `Colorado`.",
+            "example": "CA",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jurisdiction_uid",
+            "in": "query",
+            "required": false,
+            "description": "Advanced optional exact jurisdiction identifier returned by API responses and `/v1/jurisdictions/search`. Most clients should leave this blank and use `country` plus `region`.",
+            "example": "reg:us:us-ca",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regulatory check result, suggestion prompt, or jurisdiction prompt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegulatoryCheckResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PlantMatchRequired"
+                    },
+                    {
+                      "$ref": "#/components/schemas/JurisdictionMatchRequired"
+                    }
+                  ]
+                },
+                "examples": {
+                  "regulated": {
+                    "$ref": "#/components/examples/RegulatedResponse"
+                  },
+                  "ambiguousPlant": {
+                    "$ref": "#/components/examples/PlantMatchRequiredResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Regulatory checks"],
+        "operationId": "postRegulatoryCheck",
+        "summary": "Check whether a plant is regulated in a jurisdiction",
+        "description": "POST form of the regulatory check endpoint. This is the preferred integration shape for ecommerce checkout and catalog workflows. Send `ship_to.country` and `ship_to.region` as ordinary names or ISO codes; `jurisdiction_uid` is only needed for integrations that have already stored the exact dataset identifier.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegulatoryCheckRequest"
+              },
+              "examples": {
+                "california": {
+                  "summary": "Check a scientific name for California",
+                  "value": {
+                    "plant_query": "Cortaderia jubata",
+                    "ship_to": {
+                      "country": "US",
+                      "region": "CA"
+                    }
+                  }
+                },
+                "commonName": {
+                  "summary": "Check a common name",
+                  "value": {
+                    "plant_query": "pampas grass",
+                    "ship_to": {
+                      "country": "US",
+                      "region": "CA"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Regulatory check result, suggestion prompt, or jurisdiction prompt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RegulatoryCheckResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PlantMatchRequired"
+                    },
+                    {
+                      "$ref": "#/components/schemas/JurisdictionMatchRequired"
+                    }
+                  ]
+                },
+                "examples": {
+                  "regulated": {
+                    "$ref": "#/components/examples/RegulatedResponse"
+                  },
+                  "ambiguousPlant": {
+                    "$ref": "#/components/examples/PlantMatchRequiredResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/v1/plants/search": {
+      "get": {
+        "tags": ["Plant matching"],
+        "operationId": "searchPlants",
+        "summary": "Search plant names",
+        "description": "Searches scientific names, common names, synonyms, and species IDs. Use this when a user needs to choose between multiple possible species before running a regulatory check.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Plant name, common name, synonym, species ID, or near-spelling.",
+            "schema": {
+              "type": "string",
+              "examples": ["pampas grass", "pampass grss", "Cortaderia jubata"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plant search results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantSearchResponse"
+                },
+                "examples": {
+                  "search": {
+                    "$ref": "#/components/examples/PlantSearchResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/v1/jurisdictions/search": {
+      "get": {
+        "tags": ["Jurisdiction matching"],
+        "operationId": "searchJurisdictions",
+        "summary": "Search jurisdictions",
+        "description": "Search country, region, ISO code, and jurisdiction identifiers. Use this endpoint when a client wants to build a jurisdiction picker or store an exact `jurisdiction_uid`; ordinary regulatory checks can use `country` and `region` directly without calling this first.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Country, region, ISO code, or exact jurisdiction identifier. Examples: `California`, `US-CA`, `reg:us:us-ca`.",
+            "example": "California",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Optional country name or ISO country code used to narrow region matches. Examples: `US`, `United States`.",
+            "example": "US",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of matches to return. Values above 50 are capped.",
+            "example": 10,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jurisdiction search results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JurisdictionSearchResponse"
+                },
+                "examples": {
+                  "search": {
+                    "$ref": "#/components/examples/JurisdictionSearchResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "operationId": "health",
+        "summary": "Health check",
+        "description": "Unauthenticated health check for load balancers and uptime monitors.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service health status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status"],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Send the API token as `Authorization: Bearer <token>`."
+      }
+    },
+    "schemas": {
+      "RegulatoryCheckRequest": {
+        "type": "object",
+        "required": ["plant_query"],
+        "properties": {
+          "plant_query": {
+            "type": "string",
+            "description": "Scientific name, common name, synonym, species ID, or near-spelling."
+          },
+          "ship_to": {
+            "$ref": "#/components/schemas/ShipTo"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name or ISO country code. May also be sent inside `ship_to`."
+          },
+          "region": {
+            "type": "string",
+            "description": "State, province, or region name. May also be sent inside `ship_to`."
+          },
+          "jurisdiction_uid": {
+            "type": "string",
+            "description": "Advanced optional exact jurisdiction identifier returned by API responses and `/v1/jurisdictions/search`. Most clients should use `country` plus `region` instead."
+          }
+        },
+        "additionalProperties": true
+      },
+      "ShipTo": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "description": "Country name or ISO country code."
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Alternative field for ISO country code."
+          },
+          "region": {
+            "type": "string",
+            "description": "State, province, or region name."
+          },
+          "state": {
+            "type": "string",
+            "description": "Alternative field for state or region."
+          },
+          "province": {
+            "type": "string",
+            "description": "Alternative field for province or region."
+          },
+          "jurisdiction_uid": {
+            "type": "string",
+            "description": "Advanced optional exact jurisdiction identifier returned by API responses and `/v1/jurisdictions/search`."
+          }
+        },
+        "additionalProperties": true
+      },
+      "RegulatoryCheckResult": {
+        "type": "object",
+        "required": ["status", "regulated", "message", "matched_plant", "plant_match", "jurisdiction", "regulations", "release", "disclaimer"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["regulated", "not_regulated_in_dataset"]
+          },
+          "regulated": {
+            "type": "boolean",
+            "description": "`true` means one or more regulation records were found for the matched species and jurisdiction. `false` means no matching regulation record was found in the current dataset."
+          },
+          "message": {
+            "type": "string"
+          },
+          "matched_plant": {
+            "$ref": "#/components/schemas/Plant"
+          },
+          "plant_match": {
+            "$ref": "#/components/schemas/PlantMatch"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "regulations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Regulation"
+            }
+          },
+          "release": {
+            "$ref": "#/components/schemas/Release"
+          },
+          "disclaimer": {
+            "type": "string"
+          }
+        }
+      },
+      "PlantMatchRequired": {
+        "type": "object",
+        "required": ["status", "regulated", "message", "plant_query", "suggestions", "release"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "plant_match_required"
+          },
+          "regulated": {
+            "type": "null"
+          },
+          "message": {
+            "type": "string"
+          },
+          "plant_query": {
+            "type": "string"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlantSuggestion"
+            }
+          },
+          "release": {
+            "$ref": "#/components/schemas/Release"
+          }
+        }
+      },
+      "JurisdictionMatchRequired": {
+        "type": "object",
+        "required": ["status", "regulated", "message", "jurisdiction_query", "suggestions", "matched_plant", "plant_match", "release"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "jurisdiction_match_required"
+          },
+          "regulated": {
+            "type": "null"
+          },
+          "message": {
+            "type": "string"
+          },
+          "jurisdiction_query": {
+            "type": "object",
+            "additionalProperties": {
+              "type": ["string", "null"]
+            }
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Jurisdiction"
+            }
+          },
+          "matched_plant": {
+            "$ref": "#/components/schemas/Plant"
+          },
+          "plant_match": {
+            "$ref": "#/components/schemas/PlantMatch"
+          },
+          "release": {
+            "$ref": "#/components/schemas/Release"
+          }
+        }
+      },
+      "PlantSearchResponse": {
+        "type": "object",
+        "required": ["query", "match_status", "message", "matches", "release"],
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "match_status": {
+            "type": "string",
+            "enum": ["matched", "ambiguous", "suggestions_available", "not_found"]
+          },
+          "message": {
+            "type": "string"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlantSuggestion"
+            }
+          },
+          "release": {
+            "$ref": "#/components/schemas/Release"
+          }
+        }
+      },
+      "JurisdictionSearchResponse": {
+        "type": "object",
+        "required": ["query", "matches", "release"],
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "q": {
+                "type": ["string", "null"]
+              },
+              "country": {
+                "type": ["string", "null"]
+              }
+            }
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Jurisdiction"
+            }
+          },
+          "release": {
+            "$ref": "#/components/schemas/Release"
+          }
+        }
+      },
+      "Plant": {
+        "type": "object",
+        "required": ["species_id", "canonical_name", "has_current_regulation"],
+        "properties": {
+          "species_id": {
+            "type": "string"
+          },
+          "gbif_usage_key": {
+            "type": ["integer", "null"]
+          },
+          "canonical_name": {
+            "type": "string"
+          },
+          "family_name": {
+            "type": ["string", "null"]
+          },
+          "taxon_level": {
+            "type": ["string", "null"]
+          },
+          "has_current_regulation": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PlantMatch": {
+        "type": "object",
+        "required": ["input", "matched_name", "alias_type", "match_type", "match_score", "confidence"],
+        "properties": {
+          "input": {
+            "type": "string"
+          },
+          "matched_name": {
+            "type": "string"
+          },
+          "alias_type": {
+            "type": "string",
+            "enum": ["species_id", "scientific_name", "traits_species_name", "common_name", "synonym"]
+          },
+          "match_type": {
+            "type": "string",
+            "enum": ["exact", "normalized_exact", "fuzzy", "suggested"]
+          },
+          "match_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          }
+        }
+      },
+      "PlantSuggestion": {
+        "type": "object",
+        "required": ["species_id", "canonical_name", "matched_name", "alias_type", "match_score", "confidence", "has_current_regulation"],
+        "properties": {
+          "species_id": {
+            "type": "string"
+          },
+          "canonical_name": {
+            "type": "string"
+          },
+          "matched_name": {
+            "type": "string"
+          },
+          "alias_type": {
+            "type": "string"
+          },
+          "match_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "has_current_regulation": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Jurisdiction": {
+        "type": "object",
+        "required": ["jurisdiction_uid", "country", "jurisdiction_type", "regulation_status"],
+        "properties": {
+          "jurisdiction_uid": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": ["string", "null"]
+          },
+          "iso_country_code": {
+            "type": ["string", "null"]
+          },
+          "iso_subdivision_code": {
+            "type": ["string", "null"]
+          },
+          "jurisdiction_type": {
+            "type": "string",
+            "enum": ["national", "region", "international", "habitat"]
+          },
+          "regulation_status": {
+            "type": "string",
+            "enum": ["regulated", "no_regulation"]
+          },
+          "authority_name": {
+            "type": ["string", "null"]
+          },
+          "authority_type": {
+            "type": ["string", "null"]
+          },
+          "source_url": {
+            "type": ["string", "null"],
+            "format": "uri"
+          },
+          "match_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Returned by jurisdiction search and jurisdiction-match suggestions."
+          }
+        }
+      },
+      "Regulation": {
+        "type": "object",
+        "required": ["interpretation_status"],
+        "properties": {
+          "regulation_type": {
+            "type": ["string", "null"],
+            "description": "Scientist-reviewed normalized regulation type. Currently null until the interpretation layer is populated."
+          },
+          "interpretation_status": {
+            "type": "string",
+            "enum": ["raw_classification_unmapped"]
+          },
+          "classification_raw": {
+            "type": ["string", "null"],
+            "description": "Raw authority classification from the source data, such as `CCR 4500`, `List B`, or `Restricted`."
+          },
+          "note": {
+            "type": ["string", "null"]
+          },
+          "authority_name": {
+            "type": ["string", "null"]
+          },
+          "authority_type": {
+            "type": ["string", "null"]
+          },
+          "source_url": {
+            "type": ["string", "null"],
+            "format": "uri"
+          },
+          "last_updated": {
+            "type": ["string", "null"]
+          },
+          "last_updated_year": {
+            "type": ["integer", "null"]
+          },
+          "source_notes": {
+            "type": ["string", "null"]
+          },
+          "methodology_notes": {
+            "type": ["string", "null"]
+          },
+          "source_file": {
+            "type": ["string", "null"]
+          },
+          "source_row": {
+            "type": ["integer", "null"]
+          }
+        }
+      },
+      "Release": {
+        "type": "object",
+        "required": ["version", "generated_at"],
+        "properties": {
+          "version": {
+            "type": ["string", "null"]
+          },
+          "generated_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request is missing a required input.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "plant_query is required"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid bearer token.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "Unauthorized"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Too many failed authenticated requests.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": "Too Many Requests"
+            }
+          }
+        }
+      }
+    },
+    "examples": {
+      "RegulatedResponse": {
+        "summary": "A regulated plant in California",
+        "value": {
+          "status": "regulated",
+          "regulated": true,
+          "message": "Cortaderia jubata is regulated in California, United States. Review the authority details before sale or shipment.",
+          "matched_plant": {
+            "species_id": "sp_cortaderia_jubata_fc713954",
+            "gbif_usage_key": 2704521,
+            "canonical_name": "Cortaderia jubata",
+            "family_name": "Poaceae",
+            "taxon_level": "species",
+            "has_current_regulation": true
+          },
+          "plant_match": {
+            "input": "Cortaderia jubata",
+            "matched_name": "Cortaderia jubata",
+            "alias_type": "scientific_name",
+            "match_type": "exact",
+            "match_score": 1,
+            "confidence": "high"
+          },
+          "jurisdiction": {
+            "jurisdiction_uid": "reg:us:us-ca",
+            "country": "United States",
+            "region": "California",
+            "iso_country_code": "US",
+            "iso_subdivision_code": "US-CA",
+            "jurisdiction_type": "region",
+            "regulation_status": "regulated",
+            "authority_name": "California Department of Food and Agriculture",
+            "authority_type": "State Gov",
+            "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf"
+          },
+          "regulations": [
+            {
+              "regulation_type": null,
+              "interpretation_status": "raw_classification_unmapped",
+              "classification_raw": "CCR 4500",
+              "note": "CCR 4557",
+              "authority_name": "California Department of Food and Agriculture",
+              "authority_type": "State Gov",
+              "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf",
+              "last_updated": null,
+              "last_updated_year": 2021,
+              "source_notes": "Food and Agricultural Code 5004",
+              "methodology_notes": "CCR 4500 Noxious Weeds",
+              "source_file": "regulations-v1.2.csv",
+              "source_row": 1403
+            }
+          ],
+          "release": {
+            "version": "20260528T124621Z",
+            "generated_at": "2026-05-28T12:46:21Z"
+          },
+          "disclaimer": "This API reports records found in the current dataset and does not provide legal advice."
+        }
+      },
+      "PlantMatchRequiredResponse": {
+        "summary": "Ambiguous common name",
+        "value": {
+          "status": "plant_match_required",
+          "regulated": null,
+          "message": "The plant name matches multiple species. Ask the user to choose the intended plant.",
+          "plant_query": "pampas grass",
+          "suggestions": [
+            {
+              "species_id": "sp_cortaderia_jubata_fc713954",
+              "canonical_name": "Cortaderia jubata",
+              "matched_name": "Pampas Grass",
+              "alias_type": "common_name",
+              "match_score": 1,
+              "confidence": "high",
+              "has_current_regulation": true
+            },
+            {
+              "species_id": "sp_cortaderia_selloana_9f9267d8",
+              "canonical_name": "Cortaderia selloana",
+              "matched_name": "Pampas Grass",
+              "alias_type": "common_name",
+              "match_score": 1,
+              "confidence": "high",
+              "has_current_regulation": true
+            }
+          ],
+          "release": {
+            "version": "20260528T124621Z",
+            "generated_at": "2026-05-28T12:46:21Z"
+          }
+        }
+      },
+      "PlantSearchResponse": {
+        "summary": "Plant search with suggestions",
+        "value": {
+          "query": "pampass grss",
+          "match_status": "suggestions_available",
+          "message": "We could not confidently identify the plant. Ask the user to choose one of the suggested matches.",
+          "matches": [
+            {
+              "species_id": "sp_cortaderia_jubata_fc713954",
+              "canonical_name": "Cortaderia jubata",
+              "matched_name": "Pampas Grass",
+              "alias_type": "common_name",
+              "match_score": 0.917,
+              "confidence": "medium",
+              "has_current_regulation": true
+            }
+          ],
+          "release": {
+            "version": "20260528T124621Z",
+            "generated_at": "2026-05-28T12:46:21Z"
+          }
+        }
+      },
+      "JurisdictionSearchResponse": {
+        "summary": "Jurisdiction search result",
+        "value": {
+          "query": {
+            "q": "California",
+            "country": "US"
+          },
+          "matches": [
+            {
+              "jurisdiction_uid": "reg:us:us-ca",
+              "country": "United States",
+              "region": "California",
+              "iso_country_code": "US",
+              "iso_subdivision_code": "US-CA",
+              "jurisdiction_type": "region",
+              "regulation_status": "regulated",
+              "authority_name": "California Department of Food and Agriculture",
+              "authority_type": "State Gov",
+              "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf",
+              "match_score": 1
+            }
+          ],
+          "release": {
+            "version": "20260528T124621Z",
+            "generated_at": "2026-05-28T12:46:21Z"
+          }
+        }
+      }
+    }
+  }
+}

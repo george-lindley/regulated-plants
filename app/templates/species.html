@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/species.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set page_label = "Species" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">Species Search</h1>
+<p class="lead">
+    Enter a plant name to view species details and regulation coverage
+</p>
+
+<div class="row">
+    <div class="col-12">
+        <div class="search-box">
+            <select id="weedSearch" class="form-control">
+                <option></option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div id="results" class="results-container species-results d-none">
+            <section id="speciesGallery" class="species-gallery d-none" aria-labelledby="speciesGalleryHeading">
+                <div class="species-gallery-head">
+                    <h4 id="speciesGalleryHeading" class="species-card-title mb-0">Photographs</h4>
+                    <p class="species-gallery-source mb-0">
+                        Occurrence images via <a href="https://www.gbif.org/" target="_blank" rel="noopener">GBIF</a>
+                    </p>
+                </div>
+                <div id="speciesGalleryGrid" class="species-gallery-grid" role="list">
+                    <!-- Tiles inserted by species_search.js -->
+                </div>
+            </section>
+
+            <div class="scientific-details">
+                <div class="species-detail-grid">
+                    <section class="species-card">
+                        <h4 class="species-card-title">Names</h4>
+                        <p><strong>Common Name: </strong><span id="weedTitle"></span></p>
+                        <p><strong>Scientific Name: </strong><em id="weedCanonicalName"></em></p>
+                        <p id="synonymsSection" class="d-none"><strong>Scientific Name Synonyms: </strong><em id="weedSynonyms"></em></p>
+                        <p><strong>Family Name: </strong><span id="weedFamily"></span></p>
+                        <p><strong>More Information: </strong><a id="gbifLink" href="#" target="_blank">View on GBIF</a></p>
+                    </section>
+
+                    <section class="species-card">
+                        <h4 class="species-card-title">Traits</h4>
+                        <p><strong>Life Form: </strong><span id="weedLifeform"></span></p>
+                        <p><strong>Lifespan: </strong><span id="weedLifespan"></span></p>
+                        <p><strong>Habitat: </strong><span id="weedHabitat"></span></p>
+                        <p><strong>Woodiness: </strong><span id="weedWoodiness"></span></p>
+                    </section>
+                </div>
+            </div>
+            
+            <h4 id="regulationHeading">Regulation summary</h4>
+            <div id="statesList"
+                 class="list-group"
+                 data-researcher-login-url="{{ url_for('auth.signup', next=request.full_path if request.query_string else request.path) }}"
+                 data-api-request-url="{{ url_for('about.index', subject='api_access') }}#contact">
+                <!-- States will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade species-photo-modal" id="speciesPhotoModal" tabindex="-1" aria-labelledby="speciesPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="speciesPhotoModalLabel">Photograph</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="speciesPhotoModalImage" src="" alt="">
+                <p class="species-photo-credit" id="speciesPhotoModalCredit"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ url_for('static', filename='js/species_search.js') }}"></script>
+{% endblock %}

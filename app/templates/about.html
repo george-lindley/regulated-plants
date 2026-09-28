@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}About - Regulated Plants Database{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set page_label = "About" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">About Regulated Plants</h1>
+<p class="lead">Learn about our project, methodology, and get in touch with our team</p>
+
+<!-- About Content -->
+<section class="about-section">
+    <h2>What is the Regulated Plants Database?</h2>
+    <p>The Regulated Plants Database is a comprehensive resource that tracks and displays information about regulated invasive plant species across different states, provinces, regions and nations around the world. Our goal is to provide researchers, agricultural professionals, and the public with easy access to information about which plants are regulated in different jurisdictions.</p>
+    <p>This project compiles data from government agricultural and biosecurity authorities to create an interactive map and searchable database of regulated invasive plants, noxious weeds, and related plant biosecurity listings.</p>
+</section>
+
+<section class="about-section">
+    <h2>Our Mission</h2>
+    <p>Our mission is to create a centralized, accessible repository of information about regulated invasive plants to help:</p>
+    <ul class="data-list">
+        <li>Researchers track regulatory trends across regions</li>
+        <li>Agricultural professionals identify plants of concern</li>
+        <li>Policymakers develop informed regulation strategies</li>
+        <li>Gardeners and land managers make responsible planting decisions</li>
+        <li>Educational institutions teach about invasive species management</li>
+    </ul>
+</section>
+
+<section class="about-section">
+    <h2>The Team</h2>
+    <p>The Regulated Plants Database is a project led by researchers at the University of California and the United Nations University Institute for Water, Environment and Health (UNU INWEH), specializing in plant ecology, invasive species management, and agricultural policy. Our interdisciplinary team combines expertise in botany, data science, and regulatory frameworks to create a comprehensive resource for understanding plant regulations.</p>
+    
+    <h3 class="mt-4">Project Team</h3>
+    <div class="team-members mt-4">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Philipp Robeck</h4>
+                    <p class="text-muted">Project Lead, University of Melbourne<br>Research Fellow, Ecological Modeling and Biodiversity, United Nations University Institute for Water, Environment and Health</p>
+                    <p>Environmental Data Science and Ecological Modeling in Urban Planning and Biological Invasions</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Mohsen B Mesgaran</h4>
+                    <p class="text-muted">Associate Professor, University of California, Davis<br>Lead, Ecological Modeling and Food Security, United Nations University Institute for Water, Environment and Health</p>
+                    <p>Artificial intelligence, informatics, and data for agricultural and invasion science.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>George Lindley</h4>
+                    <p class="text-muted">Data Analyst & Web Developer</p>
+                    <p>Data visualization and website design. Transforming complex information into compelling narratives.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Mir Matin</h4>
+                    <p class="text-muted">Manager, Geospatial, Climate and Infrastructure Analytics Program, United Nations University Institute for Water, Environment and Health</p>
+                    <p>Geospatial solutions, remote sensing, and climate analytics for applications in environmental management and disaster risk reduction.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Farnaz Kordbacheh</h4>
+                    <p class="text-muted">Project Scientist, University of California, Davis</p>
+                    <p>Quantitative research in agricultural and invasion science.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Contributors</h3>
+    <div class="team-members mt-4">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Lior Blank</h4>
+                    <p class="text-muted">Senior Scientist, Volcani Institute</p>
+                    <p>Quantitative research in plant pathology and weed research</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="team-member">
+                    <h4>Grace Al-Khawand</h4>
+                    <p class="text-muted">Research Fellow, Environmental Modeling and Biodiversity, United Nations University Institute for Water, Environment and Health</p>
+                    <p>Interdisciplinary research in biogeography and urban environmental planning</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-section">
+    <h2>Acknowledgements</h2>
+    <p>This project was made possible through the support and collaboration of various organizations and individuals who contributed data, expertise, and resources:</p>
+    
+    <ul class="data-list">
+        <li>State and provincial agricultural departments across North America</li>
+        <li>The United Nations University Institute for Water, Environment and Health</li>
+        <li>The Department of Plant Science at the University of California in Davis</li>
+        <li>National invasive species councils</li>
+        <li>University extension services</li>
+        <li>Botanical researchers and taxonomists</li>
+        <li>Agricultural policy experts</li>
+    </ul>
+    
+    <p>We are grateful for their contributions to this ongoing effort.</p>
+</section>
+
+<section class="about-section">
+    <h3 class="mt-4">Citing the Regulated Plants Database</h3>
+    <p>Please cite the Regulated Plants Database as follows:</p>
+    <div class="citation-box" style="background-color: #f8f9fa; padding: 1.5rem; border-left: 4px solid #000000; margin: 1rem 0; font-family: 'Georgia', serif; font-style: italic;">
+        <p style="margin: 0;">Robeck, P., Lindley, G., Matin, M., Kordbacheh, F., Blank, L., Al-Khawand, G., &amp; Mesgaran, M. B. (2025). Regulated plants database. United Nations University Institute for Water, Environment and Health. <a href="https://regulatedplants.unu.edu" target="_blank">https://regulatedplants.unu.edu/</a></p>
+    </div>
+
+    <p class="mt-3">
+        <a href="{{ url_for('static', filename='data/regulated_plants.bib') }}" download="regulated_plants.bib" class="btn btn-primary">
+            Download BibTeX File
+        </a>
+    </p>
+</section>
+
+<!-- Contact Section -->
+<section class="about-section" id="contact">
+    <h2>Contact Us</h2>
+    <p>Have questions, suggestions, corrections, or an Enterprise access request? Get in touch with our team.</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <form id="contact-form" method="POST" action="{{ url_for('about.contact') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <select class="form-select" id="subject" name="subject">
+                        <option value="general" {% if contact_subject == "general" %}selected{% endif %}>General Inquiry</option>
+                        <option value="api_access" {% if contact_subject == "api_access" %}selected{% endif %}>Enterprise Access Request</option>
+                        <option value="data" {% if contact_subject == "data" %}selected{% endif %}>Data Correction</option>
+                        <option value="collaboration" {% if contact_subject == "collaboration" %}selected{% endif %}>Collaboration Request</option>
+                        <option value="other" {% if contact_subject == "other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" required>{{ contact_message }}</textarea>
+                </div>
+                <p class="privacy-submit-note">
+                    We use contact form details to respond to your message and administer access requests.
+                    See the <a href="{{ url_for('home.privacy') }}" target="_blank" rel="noopener">Privacy notice</a>
+                    before submitting.
+                </p>
+                <!-- Honeypot field to catch bots -->
+                <div style="display:none;">
+                    <label for="website">Website</label>
+                    <input type="text" name="website" id="website">
+                </div>
+                <div class="mb-3" style="width: 310px;">
+                    {{ recaptcha }}
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="contact-details">
+                <h5>Address</h5>
+                <p>
+                    Regulated Plants Database<br>
+                    Department of Plant Sciences<br>
+                    University of California, Davis<br>
+                    One Shields Avenue<br>
+                    Davis, CA 95616
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.CONTACT_FORM_DEFAULTS = {{ contact_form_defaults|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
+{% endblock %}

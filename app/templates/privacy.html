@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Privacy Notice - Regulated Plants Database{% endblock %}
+
+{% block content %}
+{% set page_label = "Privacy" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">Privacy Notice</h1>
+<p class="lead">
+    How the Regulated Plants Database handles website access requests, contact
+    messages, analytics, and API access administration.
+</p>
+
+<section class="mb-4">
+    <h2 class="h5">What We Collect</h2>
+    <p>
+        Most of the website can be viewed without an account. When you request
+        full researcher website access, we collect your name, email address,
+        organization, and reason for requesting access. These details are used
+        to review the request and administer approved accounts.
+    </p>
+    <p>
+        When you contact us, we collect the name, email address, subject, and
+        message you submit so we can respond. Data-correction messages may also
+        include the current data release name so we can identify the relevant
+        version of the database.
+    </p>
+    <p>
+        If Enterprise API access is issued, we store the organization and
+        contact details needed to administer the API key, plus limited usage
+        metadata such as endpoint, method, status code, and time of request.
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Login And API Security</h2>
+    <p>
+        Researcher website access is passwordless. We do not collect or store
+        account passwords. Approved users sign in with one-time email links.
+        Login tokens expire, can be used once, and are stored only as hashes.
+    </p>
+    <p>
+        API keys are separate from researcher website login. Issued API keys are
+        shown once and then stored only as salted hashes. Raw API keys cannot be
+        recovered from the database.
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Who Can Access This Data</h2>
+    <p>
+        Access request details are visible to project administrators who review,
+        approve, reject, or revoke website access. Contact messages are sent to
+        the project contact address. API account and usage records are available
+        to administrators responsible for operating the API.
+    </p>
+    <p>
+        We do not sell account, contact, or API access data. We may share
+        information with service providers needed to operate the website, email
+        delivery, database hosting, analytics, and security.
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Analytics And Cookies</h2>
+    <p>
+        If you accept optional analytics cookies, we use Google Analytics 4 to
+        understand how visitors use the site, for example which pages are viewed
+        and roughly where traffic comes from. Google processes this information
+        according to its own policies.
+    </p>
+    <p>
+        If optional analytics cookies are accepted, the interactive map may also
+        set a first-party anonymous identifier cookie when site metrics are
+        enabled. This is used to understand aggregate map interactions, not to
+        decide access requests.
+    </p>
+    <p>
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>
+        ·
+        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a>
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Retention</h2>
+    <p>
+        We keep account records while they are needed to review requests,
+        operate approved access, maintain an audit trail, and prevent misuse.
+        Rejected, revoked, or inactive records are reviewed periodically and
+        deleted or anonymized when they are no longer needed.
+    </p>
+    <p>
+        One-time login links expire after 30 minutes. Contact messages and API
+        usage records are retained only as long as needed for support,
+        administration, security, and audit purposes.
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Your Rights</h2>
+    <p>
+        You may ask us to access, correct, export, or delete personal data
+        associated with your website access request, account, contact message,
+        or API access. Some records may need to be retained for security, audit,
+        or legal reasons.
+    </p>
+    <p>
+        To make a request, use the contact form and select the most relevant
+        subject, or email the project contact address listed for this website.
+    </p>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Changes</h2>
+    <p>
+        We may update this notice as the beta develops. The Privacy link in the
+        site footer always points to the current notice.
+    </p>
+</section>
+{% endblock %}

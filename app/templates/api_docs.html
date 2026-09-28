@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Enterprise Docs - Regulated Plants Database{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/api.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+{% endblock %}
+
+{% block content %}
+{% set page_label = "Enterprise Docs" %}
+{% include "partials/page_eyebrow.html" %}
+<h1 class="page-title">Enterprise Documentation</h1>
+<p class="lead mb-4">OpenAPI documentation for enterprise marketplace and compliance integrations.</p>
+<section class="api-access-panel mb-4">
+    <p>
+        These docs are for enterprise developers integrating regulated-plant checks
+        into checkout, catalog review, fulfillment, or internal compliance systems.
+        Use <strong>Authorize</strong> with an issued bearer token before trying protected endpoints.
+        Enterprise use is subject to the <a href="{{ url_for('api_page.terms') }}">API Terms</a>.
+    </p>
+    <p class="mb-0">
+        For compliance checks, send a plant name plus a destination country and region,
+        such as <code>United States</code> and <code>California</code>. Exact
+        <code>jurisdiction_uid</code> values are optional advanced identifiers returned
+        by the API.
+    </p>
+</section>
+<div id="swagger-ui"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script>
+    window.addEventListener("load", function () {
+        window.ui = SwaggerUIBundle({
+            url: "{{ url_for('api_page.openapi_json') }}",
+            dom_id: "#swagger-ui",
+            deepLinking: true,
+            persistAuthorization: false,
+            layout: "BaseLayout"
+        });
+    });
+</script>
+{% endblock %}

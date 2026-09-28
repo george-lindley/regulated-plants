@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Approved Researcher Login · Regulated Plants Database{% endblock %}
+
+{% block content %}
+<section class="auth-panel">
+    {% set page_label = "Login" %}
+    {% include "partials/page_eyebrow.html" %}
+    <h1 class="page-title">Approved Researcher Login</h1>
+    <p class="lead">
+        If your research access request has been approved, enter your email
+        address and we will send a one-time login link.
+    </p>
+
+    <form class="auth-form" method="post" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        <div class="mb-3">
+            <label class="form-label" for="email">Email address</label>
+            <input
+                class="form-control"
+                type="email"
+                id="email"
+                name="email"
+                value="{{ email }}"
+                autocomplete="email"
+                required
+            >
+        </div>
+
+        <div class="auth-action-row">
+            <button type="submit" class="btn btn-primary">Email me a login link</button>
+            <a href="{{ url_for('auth.signup', next=next_url) }}">Need access? Request it here</a>
+        </div>
+    </form>
+</section>
+
+<p class="auth-secondary-note mt-3">
+    Research access is reviewed before login is enabled.
+</p>
+{% endblock %}

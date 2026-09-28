@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://regulatedplants.unu.edu/sitemap.xml
+
+# Allow all content for search engines
+Allow: /species
+Allow: /blog
+Allow: /method
+Allow: /about
+
+# Disallow administrative or sensitive areas
+Disallow: /admin
+Disallow: /auth

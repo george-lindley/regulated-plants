@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Login · Regulated Plants Database{% endblock %}
+
+{% block content %}
+<section class="auth-panel">
+    {% set page_label = "Login" %}
+    {% include "partials/page_eyebrow.html" %}
+    <h1 class="page-title">Confirm Login</h1>
+    {% if confirm_email_required %}
+    <p class="lead">
+        You are opening this link on a different device or browser from the one that
+        requested it. Enter the email address the link was sent to.
+    </p>
+    {% else %}
+    <p class="lead">
+        Continue signing in as {{ email }}.
+    </p>
+    {% endif %}
+
+    <form class="auth-form" method="post" action="{{ url_for('auth.verify') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="token" value="{{ token }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        {% if confirm_email_required %}
+        <div class="mb-3">
+            <label class="form-label" for="confirm_email">Email address</label>
+            <input class="form-control" type="email" id="confirm_email" name="confirm_email"
+                   autocomplete="email" required>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+</section>
+{% endblock %}

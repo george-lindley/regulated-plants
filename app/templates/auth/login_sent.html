@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Check Your Email · Regulated Plants Database{% endblock %}
+
+{% block content %}
+<section class="auth-panel">
+    {% set page_label = "Login" %}
+    {% include "partials/page_eyebrow.html" %}
+    <h1 class="page-title">Check Your Email</h1>
+    <p class="lead">
+        We sent a one-time login link to {{ email }}. The link expires in {{ lifetime }}.
+    </p>
+
+    {% if dev_link %}
+        <div class="alert alert-info" role="alert">
+            Development login link:
+            <a href="{{ dev_link }}">{{ dev_link }}</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
