@@ -1,0 +1,25 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    env:
+      # Project token for the "regulated plants" Railway project (production)
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Deploy web service
+        run: railway up --service 343fd196-9d5b-40ec-ab94-643374d7eab9 --ci
