@@ -10,6 +10,7 @@ from app import limiter, recaptcha
 from app.auth_helpers import account_logged_in
 from app.utils.state_database import StateDatabase
 from app.utils.species_database import SpeciesDatabase
+from app.utils.species_slug import species_slug
 from app.utils.generate_blog import BlogGenerator
 from app.utils.email_sender import send_email
 from app.utils.gbif_media import fetch_species_photos
@@ -137,6 +138,29 @@ def privacy():
 @home.route("/robots.txt")
 def robots_txt():
     return current_app.send_static_file("robots.txt")
+
+
+@home.route("/sitemap.xml")
+def sitemap_xml():
+    """Every public page, including one URL per species (referenced by robots.txt)."""
+    site_url = current_app.config["SITE_URL"]
+    pages = [
+        url_for("home.index"),
+        url_for("species.index"),
+        url_for("blog.index"),
+        url_for("method.index"),
+        url_for("about.index"),
+        url_for("api_page.api_index"),
+    ]
+    pages += [url_for("blog.post", slug=post["slug"]) for post in blog_generator.blog_posts]
+    pages += [url_for("species.detail", slug=slug) for slug in _get_species_db().get_all_slugs()]
+
+    response = current_app.response_class(
+        render_template("sitemap.xml", urls=[f"{site_url}{path}" for path in pages]),
+        mimetype="application/xml",
+    )
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
 
 
 @home.route("/api/region-weed-counts")
@@ -319,7 +343,38 @@ def home_highlights():
 # ----------------------------
 @species.route("/")
 def index():
-    return render_template("species.html")
+    # Legacy deep links (?species_id= / ?name=) move permanently to the slug URL.
+    # An inexact ?name= falls through to the page, whose JS runs a fuzzy search.
+    species_id = request.args.get("species_id", "").strip()
+    name = request.args.get("name", "").strip()
+    found = None
+    if species_id:
+        found = _get_species_db().get_species_by_id(species_id, current_only=False)
+    elif name:
+        found = _get_species_db().get_species_by_slug(species_slug(name))
+    if found:
+        return redirect(url_for("species.detail", slug=found["slug"]), code=301)
+    return render_template("species.html", species=None)
+
+
+@species.route("/<slug>")
+def detail(slug: str):
+    """Permanent species page. These URLs are published by partners (CABI),
+    so they must keep resolving across data releases."""
+    normalized = species_slug(slug)
+    if not normalized:
+        return redirect(url_for("species.index"), code=301)
+    if normalized != slug:
+        return redirect(url_for("species.detail", slug=normalized), code=301)
+
+    found = _get_species_db().get_species_by_slug(slug)
+    if not found:
+        return render_template("species.html", species=None, missing_slug=slug), 404
+    return render_template(
+        "species.html",
+        species=found,
+        canonical_url=f"{current_app.config['SITE_URL']}{url_for('species.detail', slug=slug)}",
+    )
 
 
 @species.route("/api/search")

@@ -1,5 +1,6 @@
 from typing import Dict, List
 from app.utils.database_base import DatabaseBase
+from app.utils.species_slug import species_slug
 
 
 class SpeciesDatabase(DatabaseBase):
@@ -7,6 +8,9 @@ class SpeciesDatabase(DatabaseBase):
 
     def __init__(self, db_path: str = "weeds.db", geojson_dir: str = None):
         super().__init__(db_path=db_path, geojson_dir=geojson_dir)
+        # slug -> species_id. Built once per instance; the instance is evicted
+        # from app.extensions whenever DataManager swaps in a new release.
+        self._slug_to_species_id = None
 
     @staticmethod
     def _primary_common_name(value: str, fallback: str = None) -> str:
@@ -106,11 +110,15 @@ class SpeciesDatabase(DatabaseBase):
                     row.get("common_name"),
                     row.get("canonical_name"),
                 )
+                row["slug"] = species_slug(row.get("canonical_name"))
             return results
         finally:
             conn.close()
 
-    def get_species_by_id(self, species_id: str) -> Dict:
+    def get_species_by_id(self, species_id: str, current_only: bool = True) -> Dict:
+        """One species row. ``current_only=False`` also returns species with no
+        current regulation, so a published permalink keeps resolving if a species
+        drops out of regulation in a later release."""
         conn = self.get_connection()
         try:
             row = conn.execute(
@@ -128,10 +136,10 @@ class SpeciesDatabase(DatabaseBase):
                     p.woodiness_final
                 FROM plants p
                 WHERE p.species_id = ?
-                  AND p.has_current_regulation = 1
+                  AND (p.has_current_regulation = 1 OR ? = 0)
                 LIMIT 1
                 """,
-                (species_id,),
+                (species_id, 1 if current_only else 0),
             ).fetchone()
             if not row:
                 return {}
@@ -140,9 +148,31 @@ class SpeciesDatabase(DatabaseBase):
                 result.get("common_name"),
                 result.get("canonical_name"),
             )
+            result["slug"] = species_slug(result.get("canonical_name"))
             return result
         finally:
             conn.close()
+
+    def _slug_index(self) -> Dict[str, str]:
+        if self._slug_to_species_id is None:
+            conn = self.get_connection()
+            try:
+                rows = conn.execute("SELECT species_id, canonical_name FROM plants").fetchall()
+            finally:
+                conn.close()
+            self._slug_to_species_id = {
+                species_slug(row["canonical_name"]): row["species_id"] for row in rows
+            }
+        return self._slug_to_species_id
+
+    def get_all_slugs(self) -> List[str]:
+        return sorted(self._slug_index())
+
+    def get_species_by_slug(self, slug: str) -> Dict:
+        species_id = self._slug_index().get(slug)
+        if not species_id:
+            return {}
+        return self.get_species_by_id(species_id, current_only=False)
 
     def get_weeds_by_usage_key(self, usage_key: int) -> List[Dict]:
         conn = self.get_connection()
