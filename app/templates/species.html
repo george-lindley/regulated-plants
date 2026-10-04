@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
+{% block title %}{% if species %}{{ species.canonical_name }} - Regulated Plants Database{% else %}Species Search - Regulated Plants Database{% endif %}{% endblock %}
+
+{% block head_meta %}
+{% if species %}
+{% set species_description = species.canonical_name ~ (' (' ~ species.common_name ~ ')' if species.common_name and species.common_name != species.canonical_name else '') ~ (', ' ~ species.family_name if species.family_name else '') ~ '. Regulatory status across jurisdictions worldwide, with traits and photographs.' %}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta name="description" content="{{ species_description }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Regulated Plants Database">
+<meta property="og:title" content="{{ species.canonical_name }}">
+<meta property="og:description" content="{{ species_description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+{% elif missing_slug %}
+<meta name="robots" content="noindex">
+{% endif %}
+{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/species.css') }}">
 {% endblock %}
@@ -11,6 +28,12 @@
 <p class="lead">
     Enter a plant name to view species details and regulation coverage
 </p>
+
+{% if missing_slug %}
+<div class="alert alert-warning" role="alert">
+    We couldn't find a species at this address. Try searching by common or scientific name below.
+</div>
+{% endif %}
 
 <div class="row">
     <div class="col-12">
@@ -61,7 +84,7 @@
             <h4 id="regulationHeading">Regulation summary</h4>
             <div id="statesList"
                  class="list-group"
-                 data-researcher-login-url="{{ url_for('auth.signup', next=request.full_path if request.query_string else request.path) }}"
+                 data-researcher-login-url="{{ url_for('auth.signup') }}"
                  data-api-request-url="{{ url_for('about.index', subject='api_access') }}#contact">
                 <!-- States will be inserted here -->
             </div>
@@ -86,6 +109,9 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if species %}
+<script id="initialSpecies" type="application/json">{{ species|tojson }}</script>
+{% endif %}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ url_for('static', filename='js/species_search.js') }}"></script>
 {% endblock %}

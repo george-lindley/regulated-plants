@@ -22,6 +22,9 @@ class Config:
    
    # Database configuration
    DATABASE_PATH = os.getenv('DATABASE_PATH', 'weeds.db')
+
+   # Public origin for canonical links in page metadata (species permalinks)
+   SITE_URL = os.getenv('SITE_URL', 'https://regulatedplants.unu.edu').rstrip('/')
    
    # Email configuration
    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')

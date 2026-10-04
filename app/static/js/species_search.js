@@ -10,6 +10,35 @@ document.addEventListener('DOMContentLoaded', function () {
         return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
     }
 
+    /******************************
+     * PERMALINKS (/species/<slug>)
+     ******************************/
+    const SPECIES_FIELDS = [
+        'species_id', 'slug', 'common_name', 'canonical_name', 'family_name', 'synonyms',
+        'usage_key', 'lifeform_final', 'lifespan_final', 'habitat_final', 'woodiness_final'
+    ];
+
+    // History state must be cloneable, so keep only plain fields (select2
+    // result objects can carry DOM element references).
+    function speciesState(weed) {
+        const state = {};
+        SPECIES_FIELDS.forEach(field => { state[field] = weed[field]; });
+        return state;
+    }
+
+    function setSpeciesUrl(weed, replace) {
+        const url = weed && weed.slug ? `/species/${weed.slug}` : '/species/';
+        const state = { species: weed ? speciesState(weed) : null };
+        if (replace) {
+            history.replaceState(state, '', url);
+        } else if (location.pathname !== url) {
+            history.pushState(state, '', url);
+        }
+        document.title = weed && weed.canonical_name
+            ? `${weed.canonical_name} - Regulated Plants Database`
+            : 'Species Search - Regulated Plants Database';
+    }
+
     function getPrimaryCommonName(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
@@ -47,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             family_name: weed.family_name,
                             synonyms: weed.synonyms,
                             species_id: weed.species_id,
+                            slug: weed.slug,
                             usage_key: weed.usage_key,
                             lifeform_final: weed.lifeform_final,
                             lifespan_final: weed.lifespan_final,
@@ -86,10 +116,25 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#weedSearch').on('select2:select', function (e) {
         const selectedWeed = e.params.data;
         displayWeedDetails(selectedWeed);
+        setSpeciesUrl(selectedWeed, false);
     });
 
     $('#weedSearch').on('select2:clear', function () {
         document.getElementById('results').classList.add('d-none');
+        setSpeciesUrl(null, false);
+    });
+
+    window.addEventListener('popstate', function (event) {
+        if (!event.state || !('species' in event.state)) {
+            location.reload();
+            return;
+        }
+        if (event.state.species) {
+            selectAndDisplayWeed(event.state.species);
+        } else {
+            $('#weedSearch').val(null).trigger('change');
+            document.getElementById('results').classList.add('d-none');
+        }
     });
 
     /******************************
@@ -225,7 +270,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderAnonymousRegulationSummary(statesList, jurisdictionCount) {
-        const loginUrl = statesList.dataset.researcherLoginUrl || '/auth/signup';
+        // Built at render time because the address bar changes as species are picked.
+        const loginBase = statesList.dataset.researcherLoginUrl || '/auth/signup';
+        const loginUrl = `${loginBase}?next=${encodeURIComponent(location.pathname)}`;
         const apiRequestUrl = statesList.dataset.apiRequestUrl || '/api';
 
         if (!jurisdictionCount) {
@@ -441,6 +488,7 @@ document.addEventListener('DOMContentLoaded', function () {
             family_name: weedData.family_name,
             synonyms: weedData.synonyms,
             species_id: weedData.species_id,
+            slug: weedData.slug,
             usage_key: weedData.usage_key,
             lifeform_final: weedData.lifeform_final,
             lifespan_final: weedData.lifespan_final,
@@ -449,26 +497,22 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         const newOption = new Option(formattedData.text, formattedData.id, true, true);
+        $('#weedSearch').find('option[value]').remove();
         $('#weedSearch').append(newOption).trigger('change');
 
         displayWeedDetails(formattedData);
     }
 
     /******************************
-     * AUTOLOAD BY URL ?species_id= or ?name=
+     * AUTOLOAD: species rendered into the page by /species/<slug>,
+     * or an inexact ?name= that the server could not resolve
      ******************************/
-    const speciesId = getUrlParameter('species_id');
+    const initialSpeciesEl = document.getElementById('initialSpecies');
     const plantName = getUrlParameter('name');
-    if (speciesId) {
-        fetch(`/species/api/by-species-id/${encodeURIComponent(speciesId)}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(selectAndDisplayWeed)
-            .catch(error => {
-                console.error('Error fetching plant data:', error);
-            });
+    if (initialSpeciesEl) {
+        const initialSpecies = JSON.parse(initialSpeciesEl.textContent);
+        selectAndDisplayWeed(initialSpecies);
+        history.replaceState({ species: speciesState(initialSpecies) }, '', location.href);
     } else if (plantName) {
         fetch(`/species/api/search?q=${encodeURIComponent(plantName)}`)
             .then(response => {
@@ -481,10 +525,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 const weedData = exactMatch || results[0];
+                if (!weedData) return;
                 selectAndDisplayWeed(weedData);
+                setSpeciesUrl(weedData, true);
             })
             .catch(error => {
                 console.error('Error fetching plant data:', error);
             });
+    } else {
+        history.replaceState({ species: null }, '', location.href);
     }
 });
