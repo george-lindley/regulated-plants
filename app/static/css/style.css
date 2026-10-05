@@ -983,3 +983,318 @@ table.dataTable tbody tr:hover {
    }
 
 }
+
+/* ========================================
+   DOCUMENT PAGES (method, about, privacy)
+   Reference-style layout: contents rail + readable text column.
+   ======================================== */
+.doc-layout {
+   display: grid;
+   grid-template-columns: 11rem minmax(0, 1fr);
+   gap: 3rem;
+   align-items: start;
+   margin-top: 1rem;
+}
+
+.doc-toc {
+   position: sticky;
+   top: 1.5rem;
+   padding-left: 0.85rem;
+   border-left: 1px solid #e9ecef;
+   font-size: 0.85rem;
+}
+
+.doc-toc-label,
+.doc-label {
+   display: block;
+   margin-bottom: 0.5rem;
+   color: var(--text-muted);
+   font-size: 0.68rem;
+   font-weight: 700;
+   letter-spacing: 0.1em;
+   text-transform: uppercase;
+}
+
+.doc-toc ul {
+   margin: 0;
+   padding: 0;
+   list-style: none;
+}
+
+.doc-toc li + li {
+   margin-top: 0.4rem;
+}
+
+.doc-toc a {
+   color: var(--text-medium);
+   text-decoration: none;
+}
+
+.doc-toc a:hover {
+   color: var(--unu-blue);
+   text-decoration: underline;
+}
+
+/* Text stays at a readable measure; grids and tables may use the full width. */
+.doc-body p,
+.doc-body > section > ul,
+.doc-body > section > ol,
+.doc-definition {
+   max-width: 42rem;
+}
+
+.doc-body p,
+.doc-body li {
+   color: var(--text-medium);
+   line-height: 1.65;
+}
+
+.doc-section {
+   margin-bottom: 3rem;
+   scroll-margin-top: 1.5rem;
+}
+
+.doc-section:last-child {
+   margin-bottom: 0;
+}
+
+.doc-section > h2 {
+   margin-bottom: 1rem;
+   font-size: 1.5rem;
+   font-weight: 600;
+   color: var(--text-dark);
+}
+
+.doc-section h3 {
+   margin-top: 2rem;
+   font-size: 1.1rem;
+   font-weight: 600;
+   color: var(--text-dark);
+}
+
+.doc-meta-line {
+   margin: -0.5rem 0 0;
+   color: var(--text-muted);
+   font-size: 0.85rem;
+}
+
+.doc-meta-line strong {
+   color: var(--text-dark);
+   font-weight: 600;
+}
+
+/* Plain list with a small gold marker */
+.data-list {
+   margin: 1rem 0;
+   padding-left: 0;
+   list-style: none;
+}
+
+.data-list li {
+   position: relative;
+   margin-bottom: 0.6rem;
+   padding-left: 1.25rem;
+}
+
+.data-list li::before {
+   content: "";
+   position: absolute;
+   top: 0.7em;
+   left: 0.15rem;
+   width: 0.4rem;
+   height: 0.4rem;
+   background: var(--ucd-gold);
+}
+
+/* Numbered process steps */
+.doc-steps {
+   margin: 1.5rem 0;
+   padding: 0;
+   list-style: none;
+   counter-reset: doc-step;
+}
+
+.doc-steps li {
+   position: relative;
+   padding: 0 0 1.5rem 3.25rem;
+   counter-increment: doc-step;
+}
+
+.doc-steps li::before {
+   content: counter(doc-step, decimal-leading-zero);
+   position: absolute;
+   top: 0.1rem;
+   left: 0;
+   width: 2.25rem;
+   padding-bottom: 0.2rem;
+   border-bottom: 2px solid var(--ucd-gold);
+   color: var(--unu-blue);
+   font-size: 0.8rem;
+   font-weight: 700;
+   letter-spacing: 0.05em;
+}
+
+.doc-steps li::after {
+   content: "";
+   position: absolute;
+   top: 1.9rem;
+   bottom: 0.4rem;
+   left: 1.1rem;
+   border-left: 1px solid #e9ecef;
+}
+
+.doc-steps li:last-child {
+   padding-bottom: 0;
+}
+
+.doc-steps li:last-child::after {
+   display: none;
+}
+
+.doc-steps h3 {
+   margin: 0 0 0.35rem;
+   font-size: 1rem;
+}
+
+.doc-steps p {
+   margin: 0;
+}
+
+/* Dictionary-style definition note */
+.doc-definition {
+   margin: 1.5rem 0;
+   padding: 1rem 1.25rem;
+   border-left: 3px solid var(--ucd-gold);
+   border-radius: 0 0.5rem 0.5rem 0;
+   background: var(--bg-light);
+}
+
+.doc-definition p {
+   margin: 0;
+}
+
+.doc-definition dfn {
+   color: var(--text-dark);
+   font-style: normal;
+   font-weight: 700;
+}
+
+.doc-definition .doc-pos {
+   margin: 0 0.25rem;
+   color: var(--text-muted);
+   font-style: italic;
+}
+
+/* Expandable index (sources by country, release history) */
+.doc-index {
+   border-top: 1px solid #e9ecef;
+}
+
+.doc-index details {
+   border-bottom: 1px solid #e9ecef;
+}
+
+.doc-index summary {
+   display: flex;
+   align-items: baseline;
+   gap: 1rem;
+   padding: 0.7rem 0.25rem;
+   cursor: pointer;
+   list-style: none;
+}
+
+.doc-index summary::-webkit-details-marker {
+   display: none;
+}
+
+.doc-index summary::before {
+   content: "+";
+   width: 0.75rem;
+   color: var(--text-muted);
+   font-weight: 600;
+}
+
+.doc-index details[open] > summary::before {
+   content: "\2212";
+}
+
+.doc-index summary:hover {
+   background: var(--bg-light);
+}
+
+.doc-index-name {
+   color: var(--text-dark);
+   font-weight: 600;
+}
+
+.doc-index-meta {
+   margin-left: auto;
+   color: var(--text-muted);
+   font-size: 0.8rem;
+   white-space: nowrap;
+}
+
+.doc-table {
+   width: 100%;
+   margin: 0 0 1rem;
+   font-size: 0.875rem;
+}
+
+.doc-table th {
+   padding: 0.4rem 0.5rem;
+   border-bottom: 1px solid #e9ecef;
+   color: var(--text-muted);
+   font-size: 0.68rem;
+   font-weight: 700;
+   letter-spacing: 0.08em;
+   text-align: left;
+   text-transform: uppercase;
+}
+
+.doc-table td {
+   padding: 0.45rem 0.5rem;
+   border-bottom: 1px solid #f1f3f5;
+   color: var(--text-medium);
+   vertical-align: top;
+}
+
+.doc-table td:first-child {
+   color: var(--text-dark);
+}
+
+.doc-table td.doc-table-year {
+   color: var(--text-muted);
+   white-space: nowrap;
+}
+
+@media (max-width: 991.98px) {
+   .doc-layout {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+   }
+
+   .doc-toc {
+      position: static;
+      padding: 0.75rem 0;
+      border-left: 0;
+      border-top: 1px solid #e9ecef;
+      border-bottom: 1px solid #e9ecef;
+   }
+
+   .doc-toc ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 1.25rem;
+   }
+
+   .doc-toc li + li {
+      margin-top: 0;
+   }
+}
+
+@media (max-width: 575.98px) {
+   .doc-index-meta {
+      white-space: normal;
+      text-align: right;
+   }
+}

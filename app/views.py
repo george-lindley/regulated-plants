@@ -568,9 +568,26 @@ def index():
         sources = _get_state_db().get_method_sources()
     except Exception as e:
         current_app.logger.error(f"Error loading methodology sources from database: {e}")
-        return render_template("method.html", sources=[])
+        sources = []
 
-    return render_template("method.html", sources=sources)
+    return render_template(
+        "method.html",
+        source_groups=_group_sources_by_country(sources),
+        source_count=len(sources),
+    )
+
+
+def _group_sources_by_country(sources: list) -> list:
+    """Sources grouped for the methodology index, each with its latest update year."""
+    groups = {}
+    for source in sources:
+        groups.setdefault(source.get("country") or "Other", []).append(source)
+
+    result = []
+    for country, items in groups.items():
+        years = [str(item.get("updated")) for item in items if str(item.get("updated", "")).isdigit()]
+        result.append({"country": country, "items": items, "latest_year": max(years) if years else None})
+    return sorted(result, key=lambda group: group["country"])
 
 
 # ----------------------------
