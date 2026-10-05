@@ -193,18 +193,13 @@
  .post-sidebar {
     position: sticky;
     top: 1.5rem;
-    margin-top: 2rem;
- }
-
- .latest-posts {
-    padding: 1rem 1.25rem 1.1rem;
-    border-top: 3px solid var(--ucd-gold);
-    border-radius: 0 0 0.5rem 0.5rem;
-    background: var(--ucd-gold-tint);
+    margin-top: 3.35rem;
  }
 
  .latest-posts-label {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--ucd-gold);
     color: var(--unu-blue);
     font-size: 0.72rem;
     font-weight: 700;
@@ -219,8 +214,8 @@
  }
 
  .latest-posts li {
-    padding: 0.6rem 0;
-    border-top: 1px solid rgba(21, 35, 74, 0.1);
+    padding: 0.7rem 0;
+    border-top: 1px solid #e9ecef;
  }
 
  .latest-posts li:first-child {
