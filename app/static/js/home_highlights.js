@@ -105,7 +105,7 @@
             if (topSpecies && topSpecies.name) {
                 topSpeciesNameEl.textContent = topSpecies.name;
                 topSpeciesCommonEl.textContent = topSpecies.common_name || '';
-                topSpeciesLink.href = `/species?name=${encodeURIComponent(topSpecies.name)}`;
+                topSpeciesLink.href = `/species/?name=${encodeURIComponent(topSpecies.name)}`;
                 topSpeciesLink.classList.remove('disabled');
 
                 if (topSpecies.jurisdiction_count) {
