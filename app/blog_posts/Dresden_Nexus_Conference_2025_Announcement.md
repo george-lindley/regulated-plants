@@ -1,6 +1,6 @@
 ---
 title: Dresden Nexus Conference 2025
-date: 2024-01-01
+date: 2025-06-01
 author: Publishing team
 tags: ["DNC", "conference","UNU"]
 image: dnc_2025_conference_resources.jpg
