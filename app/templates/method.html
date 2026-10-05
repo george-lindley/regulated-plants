@@ -1,8 +1,5 @@
 {% extends "base.html" %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/method.css') }}">
-{% endblock %}
+{% block title %}Methodology - Regulated Plants Database{% endblock %}
 
 {% block content %}
 {% set page_label = "Method" %}
@@ -10,120 +7,163 @@
 <h1 class="page-title">Methodology</h1>
 <p class="lead">Our systematic approach to compiling regulated plant species information</p>
 
-<!-- Debug information -->
-{% if debug_message %}
-<div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
-    <h4>Debug Information (only visible during development):</h4>
-    <p>{{ debug_message }}</p>
-    <p>Number of countries: {{ grouped_sources|length }}</p>
-    <p>Countries: 
-    {% for country in grouped_sources.keys() %}
-        {{ country }}{% if not loop.last %}, {% endif %}
-    {% endfor %}
-    </p>
-</div>
+{% set country_count = source_groups|length %}
+{% if source_count %}
+<p class="doc-meta-line">
+    Compiled from <strong>{{ '{:,}'.format(source_count) }}</strong> official regulatory sources
+    across <strong>{{ country_count }}</strong> {{ 'country or bloc' if country_count == 1 else 'countries and blocs' }}
+    {%- if release_metadata.date_label %} &middot; Current release <strong>{{ release_metadata.date_label }}</strong>{% endif %}
+</p>
 {% endif %}
 
-<section class="about-section">
-    <h2>Research Approach</h2>
-    <p>
-        To comprehensively identify regulated plant species, we conducted systematic research using authoritative and reliable sources. Our approach included the following steps:
-    </p>
-    <ul class="data-list">
-        <li><b>Data Collection from Authoritative Sources:</b> We reviewed and extracted information from government websites (e.g., state/provincial departments of agriculture, environmental protection, and natural resources), academic institutions (e.g., university extension programs specializing in invasive and noxious plants), and reputable non-governmental organizations (NGOs) focused on plant conservation and invasive species management.
-        </li>
+<div class="doc-layout">
+    <nav class="doc-toc" aria-label="On this page">
+        <span class="doc-toc-label">On this page</span>
+        <ul>
+            <li><a href="#approach">Research approach</a></li>
+            <li><a href="#scope">Scope</a></li>
+            <li><a href="#sources">Data sources</a></li>
+            <li><a href="#data-versions">Release history</a></li>
+        </ul>
+    </nav>
 
-        <li><b>Compilation of Region-Specific Lists:</b> For each state, province, and country, we compiled a list of regulated plant species, ensuring that our data captured variations in regulatory definitions (e.g., noxious plants, invasive plants) and species classifications unique to each jurisdiction.
-        </li>
+    <div class="doc-body">
+        <section class="doc-section" id="approach">
+            <h2>Research approach</h2>
+            <p>
+                To identify regulated plant species comprehensively, we carried out systematic research
+                using authoritative and reliable sources, in four steps.
+            </p>
+            <ol class="doc-steps">
+                <li>
+                    <h3>Data collection from authoritative sources</h3>
+                    <p>
+                        We reviewed and extracted information from government websites (state and provincial
+                        departments of agriculture, environmental protection and natural resources), academic
+                        institutions (university extension programs specialising in invasive and noxious plants),
+                        and reputable non-governmental organisations focused on plant conservation and invasive
+                        species management.
+                    </p>
+                </li>
+                <li>
+                    <h3>Region-specific lists</h3>
+                    <p>
+                        For each state, province and country we compiled a list of regulated plant species,
+                        capturing variations in regulatory definitions (e.g. noxious, invasive) and the species
+                        classifications unique to each jurisdiction.
+                    </p>
+                </li>
+                <li>
+                    <h3>Comparison with federal lists</h3>
+                    <p>
+                        Regional lists were compared with federal noxious plant lists from the relevant agencies
+                        (USDA in the United States, federal regulations in Canada, national restrictions in
+                        Australia) to identify discrepancies, overlaps and gaps between regional and national
+                        regulation.
+                    </p>
+                </li>
+                <li>
+                    <h3>Verification and cross-referencing</h3>
+                    <p>
+                        Findings were cross-referenced for accuracy and consistency, including validating species
+                        names and classifications to account for synonyms and taxonomic updates.
+                    </p>
+                </li>
+            </ol>
+            <p>
+                The result is a consistent view of regulated plant species that shows where plant management
+                policies align and diverge across jurisdictions.
+            </p>
+        </section>
 
-        <li><b>Comparison with Federal Lists:</b> The compiled region-specific lists were systematically compared with the federal noxious plant lists published by relevant agencies (USDA in the US, Federal regulations in Canada, and national restrictions in Australia). This allowed us to identify discrepancies, overlaps, and gaps between regional and national regulations.
-        </li>
+        <section class="doc-section" id="scope">
+            <h2>Scope</h2>
+            <p>
+                The database is compiled from official regulatory lists and updated as regulations change.
+                For each regulated plant it records:
+            </p>
+            <ul class="data-list">
+                <li>Common and scientific names</li>
+                <li>Regulation status across jurisdictions</li>
+                <li>Distribution across regions</li>
+            </ul>
+            <div class="doc-definition">
+                <span class="doc-label">Definition</span>
+                <p>
+                    <dfn>Species</dfn><span class="doc-pos">n.</span>
+                    In a regulated plant list, a genus or species includes all of its species, subspecies,
+                    cultivars, varieties and forms, including genetically modified variants, unless specifically
+                    excluded. It <strong>excludes</strong> hybrids with another species unless otherwise stated.
+                </p>
+            </div>
+        </section>
 
-        <li><b>Verification and Cross-Referencing:</b> We cross-referenced the findings to ensure accuracy and consistency. This included validating species names and classifications to account for synonyms and taxonomic updates.
-        </li>
-    </ul>
-    <p>
-        This method ensured a comprehensive and accurate assessment of regulated plant species, providing insights into the alignment and divergence of plant management policies across jurisdictions.
-    </p>
-</section>
-
-<section class="about-section">
-    <h2>Data Sources</h2>
-    <p>Our database is compiled from official regulatory lists and is regularly updated to reflect the latest regulations. The data includes:</p>
-    <ul class="data-list">
-        <li>Common and scientific names of regulated plant species</li>
-        <li>Regulation status across different jurisdictions</li>
-        <li>Distribution information across regions</li>
-    </ul>
-    <p>Genus, species, in the context of the regulated plant list, is considered to include all species, subspecies, cultivars, varieties, and forms of that species (including genetically modified variants), unless specifically excluded. However, a species is considered to exclude any hybrids of that species with another species, unless otherwise stated.</p>
-
-
-    <div class="sources-container">
-        {% for country, items in sources|groupby('country') %}
-        <button class="sources-toggle" id="sourcesToggle{{ country|replace(' ', '') }}" aria-expanded="false">
-            <span>View {{ country }} Sources</span>
-            <svg class="chevron-icon" viewBox="0 0 24 24" width="24" height="24">
-                <path d="M6 9l6 6 6-6"></path>
-            </svg>
-        </button>
-        
-        <div class="sources-content" id="sourcesContent{{ country|replace(' ', '') }}">
-            <div class="sources-grid">
-                {% for source in items %}
-                <div class="state-item">
-                    <span class="state-name">{{ source.name }}</span>
-                    <div class="details">
-                        <span class="authority">
-                            {{ source.authority }}
+        <section class="doc-section" id="sources">
+            <h2>Data sources</h2>
+            <p>Regulatory sources by country or bloc, with the issuing authority and the year each list was last updated.</p>
+            {% if source_groups %}
+            <div class="doc-index">
+                {% for group in source_groups %}
+                <details>
+                    <summary>
+                        <span class="doc-index-name">{{ 'European Union' if group.country == 'EU' else group.country }}</span>
+                        <span class="doc-index-meta">
+                            {{ group['items']|length }} {{ 'source' if group['items']|length == 1 else 'sources' }}
+                            {%- if group.latest_year %} &middot; updated {{ group.latest_year }}{% endif %}
                         </span>
-                        <span class="year">last updated {{ source.updated }}</span>
-                    </div>
-                </div>
+                    </summary>
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th scope="col">Jurisdiction</th><th scope="col">Authority</th><th scope="col">Updated</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for source in group['items'] %}
+                            <tr>
+                                <td>{{ source.name }}</td>
+                                <td>{{ source.authority }}</td>
+                                <td class="doc-table-year">{{ source.updated }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </details>
                 {% endfor %}
             </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <h3 id="data-versions">Data Versions</h3>
-    <p>
-        Public dataset releases are recorded in the dataset manifest. The website reads
-        the current release and release history from that manifest.
-    </p>
-    <div class="sources-container">
-        <button class="sources-toggle" id="versionsToggle" aria-expanded="false">
-            <span>View Data Release History</span>
-            <svg class="chevron-icon" viewBox="0 0 24 24" width="24" height="24">
-                <path d="M6 9l6 6 6-6"></path>
-            </svg>
-        </button>
-        <div class="sources-content versions-content" id="versionsContent">
-            {% for release in release_metadata.history %}
-                <div class="state-item">
-                    <span class="state-name">{{ release.label }}</span>
-                    <div class="details">
-                        <span class="authority">
-                            {{ release.summary or "Data release" }}
-                            {% if release.current %}(current){% endif %}
-                        </span>
-                        {% if release.date_label %}
-                            <span class="year">{{ release.date_kind|capitalize }} {{ release.date_label }}</span>
-                        {% endif %}
-                    </div>
-                </div>
             {% else %}
-                <div class="state-item">
-                    <span class="state-name">No release history available</span>
-                    <div class="details">
-                        <span class="authority">Publish a release history in the dataset manifest to populate this section.</span>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+            <p>Source details are temporarily unavailable.</p>
+            {% endif %}
+
+            <h3 id="data-versions">Release history</h3>
+            <p>
+                Each public dataset release is recorded in the dataset manifest, which this site reads for the
+                current release and its history.
+            </p>
+            <div class="doc-index">
+                <details>
+                    <summary>
+                        <span class="doc-index-name">Data releases</span>
+                        <span class="doc-index-meta">{{ release_metadata.history|length }} recorded</span>
+                    </summary>
+                    <table class="doc-table">
+                        <thead>
+                            <tr><th scope="col">Release</th><th scope="col">Summary</th><th scope="col">Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for release in release_metadata.history %}
+                            <tr>
+                                <td>{{ release.label }}</td>
+                                <td>{{ release.summary or "Data release" }}{% if release.current %} (current){% endif %}</td>
+                                <td class="doc-table-year">{% if release.date_label %}{{ release.date_kind|capitalize }} {{ release.date_label }}{% endif %}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3">No release history available.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+        </section>
     </div>
-</section>
+</div>
 {% endblock %}
 
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/sources.js') }}"></script>
-{% endblock %}
