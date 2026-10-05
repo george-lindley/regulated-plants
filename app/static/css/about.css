@@ -3,6 +3,26 @@
    ======================================== */
 
 /* Team Members: reference-style entries, no boxes */
+.doc-section .team-group-label {
+   margin: 2.5rem 0 0;
+   padding-top: 0.75rem;
+   border-top: 2px solid var(--unu-blue);
+   color: var(--unu-blue);
+   font-size: 0.75rem;
+   font-weight: 700;
+   letter-spacing: 0.1em;
+   text-transform: uppercase;
+}
+
+/* The group rule replaces the hairline above the first row */
+.team-grid .team-member:nth-child(-n + 2) {
+   border-top: 0;
+}
+
+.doc-section .team-group-label ~ .team-group-label {
+   margin-top: 3rem;
+}
+
 .team-grid {
    display: grid;
    grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -90,5 +110,9 @@
 @media (max-width: 767.98px) {
    .team-grid {
        grid-template-columns: 1fr;
+   }
+
+   .team-grid .team-member:nth-child(2) {
+       border-top: 1px solid #e9ecef;
    }
 }
