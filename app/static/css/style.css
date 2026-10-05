@@ -18,8 +18,9 @@
    --hover-grey: #f8f9fa;
    --hover-dark: #333333;
    
-   /* System Colors (for future use) */
+   /* Accent */
    --ucd-gold: #fcbc04;
+   --ucd-gold-tint: #fff8e1;
 }
 
 /* ========================================

@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 {% endblock %}
 {% block content %}
+<div class="post-layout">
 <!-- Blog Post Header -->
 <article class="blog-post blog-post--single">
     <header class="post-header">
@@ -63,6 +64,24 @@
         </div>
     </footer>
 </article>
+
+{% if latest_posts %}
+<aside class="post-sidebar" aria-labelledby="latestPostsHeading">
+    <div class="latest-posts">
+        <h2 class="latest-posts-label" id="latestPostsHeading">Latest posts</h2>
+        <ul>
+            {% for item in latest_posts %}
+            <li>
+                <time class="latest-posts-date" datetime="{{ item.date }}">{{ item.date }}</time>
+                <a href="{{ url_for('blog.post', slug=item.slug) }}">{{ item.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <a class="latest-posts-all" href="{{ url_for('blog.index') }}">All posts &rarr;</a>
+    </div>
+</aside>
+{% endif %}
+</div>
 
 <!-- SEO Metadata -->
 <script type="application/ld+json">

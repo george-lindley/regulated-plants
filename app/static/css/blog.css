@@ -136,7 +136,134 @@
     margin: 0 auto;
  }
  
+ /* Single post: article column + latest posts */
+ .post-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 46rem) 16rem;
+    gap: 4rem;
+    align-items: start;
+ }
+
+ .post-content {
+    max-width: 44rem;
+    color: var(--text-medium);
+    line-height: 1.7;
+ }
+
+ .post-content h2,
+ .post-content h3 {
+    margin: 2rem 0 0.75rem;
+    color: var(--text-dark);
+    font-weight: 600;
+ }
+
+ .post-content h2 {
+    font-size: 1.4rem;
+ }
+
+ .post-content h3 {
+    font-size: 1.15rem;
+ }
+
+ .post-content strong {
+    color: var(--text-dark);
+ }
+
+ .post-content ul {
+    padding-left: 0;
+    list-style: none;
+ }
+
+ .post-content ul li {
+    position: relative;
+    margin-bottom: 0.4rem;
+    padding-left: 1.25rem;
+ }
+
+ .post-content ul li::before {
+    content: "";
+    position: absolute;
+    top: 0.75em;
+    left: 0.15rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    background: var(--ucd-gold);
+ }
+
+ .post-sidebar {
+    position: sticky;
+    top: 1.5rem;
+    margin-top: 2rem;
+ }
+
+ .latest-posts {
+    padding: 1rem 1.25rem 1.1rem;
+    border-top: 3px solid var(--ucd-gold);
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: var(--ucd-gold-tint);
+ }
+
+ .latest-posts-label {
+    margin-bottom: 0.75rem;
+    color: var(--unu-blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+ }
+
+ .latest-posts ul {
+    margin: 0 0 0.9rem;
+    padding: 0;
+    list-style: none;
+ }
+
+ .latest-posts li {
+    padding: 0.6rem 0;
+    border-top: 1px solid rgba(21, 35, 74, 0.1);
+ }
+
+ .latest-posts li:first-child {
+    padding-top: 0;
+    border-top: 0;
+ }
+
+ .latest-posts-date {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+ }
+
+ .latest-posts li a {
+    color: var(--unu-blue);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+ }
+
+ .latest-posts li a:hover {
+    text-decoration: underline;
+ }
+
+ .latest-posts-all {
+    font-size: 0.85rem;
+ }
+
  /* Mobile Adjustments */
+ @media (max-width: 991.98px) {
+    .post-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .post-sidebar {
+        position: static;
+        margin-top: 0;
+    }
+ }
+
  @media (max-width: 768px) {
     .blog-post-grid {
         grid-template-columns: 1fr;

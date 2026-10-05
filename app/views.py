@@ -555,7 +555,8 @@ def index():
 def post(slug):
     post = blog_generator.get_post_by_slug(slug)
     if post:
-        return render_template("blog_post.html", post=post, title=post["title"])
+        latest_posts = [p for p in blog_generator.blog_posts if p["slug"] != slug][:5]
+        return render_template("blog_post.html", post=post, title=post["title"], latest_posts=latest_posts)
     return "Post not found", 404
 
 
