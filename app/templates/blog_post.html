@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 {% endblock %}
 {% block content %}
-<div class="page-reading">
 <div class="post-layout">
 <!-- Blog Post Header -->
 <article class="blog-post blog-post--single">
@@ -107,5 +106,4 @@
     "keywords": "{{ post.tags|join(', ') if post.tags else '' }}"
 }
 </script>
-</div>
 {% endblock %}

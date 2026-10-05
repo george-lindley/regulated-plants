@@ -139,13 +139,13 @@
  /* Single post: article column + latest posts */
  .post-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 16rem;
-    gap: 3.5rem;
+    grid-template-columns: minmax(0, 1fr) 18rem;
+    gap: 4rem;
     align-items: start;
  }
 
  .post-content {
-    max-width: 44rem;
+    max-width: 58rem;
     color: var(--text-medium);
     line-height: 1.7;
  }

@@ -986,23 +986,13 @@ table.dataTable tbody tr:hover {
 }
 
 /* ========================================
-   READING PAGES: a centred column for text-led pages (method, about,
-   privacy, blog posts) so spare width is shared on both sides.
-   ======================================== */
-.page-reading {
-   width: 100%;
-   max-width: 62rem;
-   margin: 0 auto;
-}
-
-/* ========================================
    DOCUMENT PAGES (method, about, privacy)
    Reference-style layout: contents rail + readable text column.
    ======================================== */
 .doc-layout {
    display: grid;
-   grid-template-columns: 11rem minmax(0, 1fr);
-   gap: 3rem;
+   grid-template-columns: 12rem minmax(0, 1fr);
+   gap: 3.5rem;
    align-items: start;
    margin-top: 1rem;
 }
@@ -1051,7 +1041,7 @@ table.dataTable tbody tr:hover {
 .doc-body > section > ul,
 .doc-body > section > ol,
 .doc-definition {
-   max-width: 44rem;
+   max-width: 66rem;
 }
 
 .doc-body p,
