@@ -12,6 +12,7 @@
 <meta property="og:title" content="{{ species.canonical_name }}">
 <meta property="og:description" content="{{ species_description }}">
 <meta property="og:url" content="{{ canonical_url }}">
+<script type="application/ld+json">{{ structured_data|tojson }}</script>
 {% elif missing_slug %}
 <meta name="robots" content="noindex">
 {% endif %}
@@ -24,10 +25,17 @@
 {% block content %}
 {% set page_label = "Species" %}
 {% include "partials/page_eyebrow.html" %}
+{% if species %}
+<h1 class="page-title"><em>{{ species.canonical_name }}</em></h1>
+<p class="lead">
+    {% if species.common_name and species.common_name != species.canonical_name %}{{ species.common_name }} &middot; {% endif %}{{ species.family_name or 'Family not available' }}
+</p>
+{% else %}
 <h1 class="page-title">Species Search</h1>
 <p class="lead">
     Enter a plant name to view species details and regulation coverage
 </p>
+{% endif %}
 
 {% if missing_slug %}
 <div class="alert alert-warning" role="alert">
@@ -47,7 +55,7 @@
 
 <div class="row mt-4">
     <div class="col-12">
-        <div id="results" class="results-container species-results d-none">
+        <div id="results" class="results-container species-results{% if not species %} d-none{% endif %}">
             <section id="speciesGallery" class="species-gallery d-none" aria-labelledby="speciesGalleryHeading">
                 <div class="species-gallery-head">
                     <h4 id="speciesGalleryHeading" class="species-card-title mb-0">Photographs</h4>
@@ -64,19 +72,19 @@
                 <div class="species-detail-grid">
                     <section class="species-card">
                         <h4 class="species-card-title">Names</h4>
-                        <p><strong>Common Name: </strong><span id="weedTitle"></span></p>
-                        <p><strong>Scientific Name: </strong><em id="weedCanonicalName"></em></p>
-                        <p id="synonymsSection" class="d-none"><strong>Scientific Name Synonyms: </strong><em id="weedSynonyms"></em></p>
-                        <p><strong>Family Name: </strong><span id="weedFamily"></span></p>
-                        <p><strong>More Information: </strong><a id="gbifLink" href="#" target="_blank">View on GBIF</a></p>
+                        <p><strong>Common Name: </strong><span id="weedTitle">{{ species.common_name if species }}</span></p>
+                        <p><strong>Scientific Name: </strong><em id="weedCanonicalName">{{ species.canonical_name if species }}</em></p>
+                        <p id="synonymsSection" class="{% if not synonyms_preview %}d-none{% endif %}"><strong>Scientific Name Synonyms: </strong><em id="weedSynonyms">{{ synonyms_preview }}</em></p>
+                        <p><strong>Family Name: </strong><span id="weedFamily">{{ (species.family_name or 'Not available') if species }}</span></p>
+                        <p><strong>More Information: </strong><a id="gbifLink" href="{{ 'https://www.gbif.org/species/' ~ species.usage_key if species else '#' }}" target="_blank" rel="noopener">View on GBIF</a></p>
                     </section>
 
                     <section class="species-card">
                         <h4 class="species-card-title">Traits</h4>
-                        <p><strong>Life Form: </strong><span id="weedLifeform"></span></p>
-                        <p><strong>Lifespan: </strong><span id="weedLifespan"></span></p>
-                        <p><strong>Habitat: </strong><span id="weedHabitat"></span></p>
-                        <p><strong>Woodiness: </strong><span id="weedWoodiness"></span></p>
+                        <p><strong>Life Form: </strong><span id="weedLifeform">{{ traits['Life Form'] if species }}</span></p>
+                        <p><strong>Lifespan: </strong><span id="weedLifespan">{{ traits['Lifespan'] if species }}</span></p>
+                        <p><strong>Habitat: </strong><span id="weedHabitat">{{ traits['Habitat'] if species }}</span></p>
+                        <p><strong>Woodiness: </strong><span id="weedWoodiness">{{ traits['Woodiness'] if species }}</span></p>
                     </section>
                 </div>
             </div>
@@ -86,8 +94,28 @@
                  class="list-group"
                  data-researcher-login-url="{{ url_for('auth.signup') }}"
                  data-api-request-url="{{ url_for('about.index', subject='api_access') }}#contact">
-                <!-- States will be inserted here -->
+                {% if species %}
+                <div class="list-group-item species-access-summary">
+                    {% if jurisdiction_count %}
+                    <h5 class="mb-0">Regulated in {{ '{:,}'.format(jurisdiction_count) }} {{ 'jurisdiction' if jurisdiction_count == 1 else 'jurisdictions' }}</h5>
+                    {% else %}
+                    <p class="mb-1">No regulations found for this species.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <!-- species_search.js replaces this with the full summary -->
             </div>
+
+            {% if related_species %}
+            <section class="species-related" aria-labelledby="relatedHeading">
+                <h4 id="relatedHeading">Other regulated plants in <em>{{ species.canonical_name.split(' ')[0] }}</em></h4>
+                <ul class="species-related-list">
+                    {% for item in related_species %}
+                    <li><a href="{{ url_for('species.detail', slug=item.slug) }}"><em>{{ item.canonical_name }}</em></a></li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
         </div>
     </div>
 </div>

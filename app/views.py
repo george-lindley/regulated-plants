@@ -2,6 +2,7 @@
 import gzip
 import json
 import os
+import re
 import requests as http_requests
 from flask import Blueprint, render_template, jsonify, current_app, request, flash, url_for, redirect, send_from_directory, abort
 from werkzeug.utils import safe_join
@@ -367,14 +368,73 @@ def detail(slug: str):
     if normalized != slug:
         return redirect(url_for("species.detail", slug=normalized), code=301)
 
-    found = _get_species_db().get_species_by_slug(slug)
+    species_db = _get_species_db()
+    found = species_db.get_species_by_slug(slug)
     if not found:
         return render_template("species.html", species=None, missing_slug=slug), 404
+
+    canonical_url = f"{current_app.config['SITE_URL']}{url_for('species.detail', slug=slug)}"
+    synonyms = [name.strip() for name in (found.get("synonyms") or "").split(",") if name.strip()]
     return render_template(
         "species.html",
         species=found,
-        canonical_url=f"{current_app.config['SITE_URL']}{url_for('species.detail', slug=slug)}",
+        canonical_url=canonical_url,
+        synonyms_preview=", ".join(synonyms[:3]),
+        traits={
+            "Life Form": _format_trait(found.get("lifeform_final")),
+            "Lifespan": _format_trait(found.get("lifespan_final")),
+            "Habitat": _format_trait(found.get("habitat_final")),
+            "Woodiness": _format_trait(found.get("woodiness_final")),
+        },
+        jurisdiction_count=_jurisdiction_count(species_db.get_states_by_species_id(found["species_id"])),
+        related_species=species_db.get_related_species(found["species_id"], found["canonical_name"]),
+        structured_data=_species_structured_data(found, synonyms, canonical_url),
     )
+
+
+def _format_trait(value) -> str:
+    """Server-side twin of formatTraitValue() in species_search.js."""
+    raw = str(value or "").strip()
+    if not raw:
+        return "Not Available"
+    if raw == raw.upper() and len(raw) <= 4:
+        return raw
+    return re.sub(r"(^|[\s\-/,(])([a-z])", lambda m: m.group(1) + m.group(2).upper(), raw.lower())
+
+
+def _species_structured_data(found: dict, synonyms: list, canonical_url: str) -> dict:
+    """schema.org Taxon (Bioschemas profile) so search engines and biodiversity
+    tools can read the page as a species record."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Taxon",
+        "http://purl.org/dc/terms/conformsTo": {
+            "@id": "https://bioschemas.org/profiles/Taxon/1.0-RELEASE",
+            "@type": "CreativeWork",
+        },
+        "@id": canonical_url,
+        "url": canonical_url,
+        "name": found["canonical_name"],
+    }
+    if found.get("taxon_level"):
+        data["taxonRank"] = found["taxon_level"]
+    # Hybrids currently inherit their parent's synonyms, common name and GBIF key
+    # in the data, so none of those describe the hybrid itself.
+    if found.get("taxon_level") == "hybrid":
+        return data
+    alternate_names = synonyms[:]
+    if found.get("common_name") and found["common_name"] != found["canonical_name"]:
+        alternate_names.insert(0, found["common_name"])
+    if alternate_names:
+        data["alternateName"] = alternate_names
+    if found.get("usage_key"):
+        data["sameAs"] = f"https://www.gbif.org/species/{found['usage_key']}"
+        data["identifier"] = {
+            "@type": "PropertyValue",
+            "propertyID": "GBIF",
+            "value": str(found["usage_key"]),
+        }
+    return data
 
 
 @species.route("/api/search")

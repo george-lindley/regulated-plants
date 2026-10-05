@@ -133,7 +133,8 @@ class SpeciesDatabase(DatabaseBase):
                     p.lifeform_final,
                     p.lifespan_final,
                     p.habitat_final,
-                    p.woodiness_final
+                    p.woodiness_final,
+                    p.taxon_level
                 FROM plants p
                 WHERE p.species_id = ?
                   AND (p.has_current_regulation = 1 OR ? = 0)
@@ -173,6 +174,34 @@ class SpeciesDatabase(DatabaseBase):
         if not species_id:
             return {}
         return self.get_species_by_id(species_id, current_only=False)
+
+    def get_related_species(self, species_id: str, canonical_name: str, limit: int = 12) -> List[Dict]:
+        """Other regulated entries in the same genus (including a genus-level
+        entry), for internal links between species pages."""
+        genus = (canonical_name or "").split(" ", 1)[0]
+        if not genus:
+            return []
+
+        conn = self.get_connection()
+        try:
+            rows = conn.execute(
+                """
+                SELECT p.canonical_name
+                FROM plants p
+                WHERE (p.canonical_name = ? OR p.canonical_name LIKE ? || ' %')
+                  AND p.species_id != ?
+                  AND p.has_current_regulation = 1
+                ORDER BY p.canonical_name
+                LIMIT ?
+                """,
+                (genus, genus, species_id, limit),
+            ).fetchall()
+            return [
+                {"canonical_name": row["canonical_name"], "slug": species_slug(row["canonical_name"])}
+                for row in rows
+            ]
+        finally:
+            conn.close()
 
     def get_weeds_by_usage_key(self, usage_key: int) -> List[Dict]:
         conn = self.get_connection()

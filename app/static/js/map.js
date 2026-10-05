@@ -529,8 +529,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (type !== 'display') return data || '';
                         if (type === 'display' && data) {
                             const speciesUrl = row.species_id
-                                ? `/species?species_id=${encodeURIComponent(row.species_id)}`
-                                : `/species?name=${encodeURIComponent(data)}`;
+                                ? `/species/?species_id=${encodeURIComponent(row.species_id)}`
+                                : `/species/?name=${encodeURIComponent(data)}`;
                             return `<a href="${speciesUrl}" class="species-link" target="_blank"><em>${escapeHtml(data)}</em></a>`;
                         }
                         return 'Unknown';

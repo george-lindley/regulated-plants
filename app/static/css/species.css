@@ -83,6 +83,25 @@
    line-height: 1.4;
 }
 
+.species-related {
+   margin-top: 2.5rem;
+   padding-top: 1.5rem;
+   border-top: 1px solid #e9ecef;
+}
+
+.species-related-list {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+   gap: 0.5rem 1rem;
+   padding-left: 0;
+   list-style: none;
+   margin-bottom: 0;
+}
+
+.species-related-list a {
+   color: var(--unu-blue);
+}
+
 .species-access-summary {
    border-left: 4px solid var(--unu-blue);
 }
