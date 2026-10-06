@@ -76,7 +76,7 @@
                         <p><strong>Scientific Name: </strong><em id="weedCanonicalName">{{ species.canonical_name if species }}</em></p>
                         <p id="synonymsSection" class="{% if not synonyms_preview %}d-none{% endif %}"><strong>Scientific Name Synonyms: </strong><em id="weedSynonyms">{{ synonyms_preview }}</em></p>
                         <p><strong>Family Name: </strong><span id="weedFamily">{{ (species.family_name or 'Not available') if species }}</span></p>
-                        <p><strong>More Information: </strong><a id="gbifLink" href="{{ 'https://www.gbif.org/species/' ~ species.usage_key if species else '#' }}" target="_blank" rel="noopener">View on GBIF</a></p>
+                        <p><strong>More Information: </strong><a id="gbifLink" href="{{ 'https://www.gbif.org/species/' ~ (species.taxon_id or species.usage_key) if species else '#' }}" target="_blank" rel="noopener">View on GBIF</a></p>
                     </section>
 
                     <section class="species-card">

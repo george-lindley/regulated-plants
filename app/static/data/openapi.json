@@ -595,7 +595,12 @@
             "type": "string"
           },
           "gbif_usage_key": {
-            "type": ["integer", "null"]
+            "type": ["integer", "null"],
+            "description": "Numeric GBIF backbone taxon key. Not unique: hybrids share their parent's key."
+          },
+          "gbif_taxon_id": {
+            "type": ["string", "null"],
+            "description": "GBIF Catalogue of Life (COL XR) taxon ID, e.g. \"6P8ZF\". Pass checklistKey=7ddf754f-d193-4cc9-b351-99906754a03b when querying GBIF with it."
           },
           "canonical_name": {
             "type": "string"
@@ -838,6 +843,7 @@
           "matched_plant": {
             "species_id": "sp_cortaderia_jubata_fc713954",
             "gbif_usage_key": 2704521,
+            "gbif_taxon_id": "YHTW",
             "canonical_name": "Cortaderia jubata",
             "family_name": "Poaceae",
             "taxon_level": "species",

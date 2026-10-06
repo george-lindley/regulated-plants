@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             species_id: weed.species_id,
                             slug: weed.slug,
                             usage_key: weed.usage_key,
+                            taxon_id: weed.taxon_id,
                             lifeform_final: weed.lifeform_final,
                             lifespan_final: weed.lifespan_final,
                             habitat_final: weed.habitat_final,
@@ -202,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return tile;
     }
 
-    function renderGallery(usageKey, speciesName) {
+    function renderGallery(speciesId, usageKey, speciesName) {
         const gallery = document.getElementById('speciesGallery');
         const grid = document.getElementById('speciesGalleryGrid');
         if (!gallery || !grid) return;
@@ -210,11 +211,16 @@ document.addEventListener('DOMContentLoaded', function () {
         gallery.classList.add('d-none');
         grid.innerHTML = '';
 
-        if (!usageKey) return;
+        if (!speciesId && !usageKey) return;
 
         const token = ++galleryRequestToken;
+        // by-species-id lets the server use the GBIF Catalogue of Life ID when the
+        // data release has one.
+        const photosUrl = speciesId
+            ? `/species/api/photos/by-species-id/${encodeURIComponent(speciesId)}`
+            : `/species/api/photos/by-key/${encodeURIComponent(usageKey)}`;
 
-        fetch(`/species/api/photos/by-key/${encodeURIComponent(usageKey)}`)
+        fetch(photosUrl)
             .then(response => (response.ok ? response.json() : { photos: [] }))
             .then(data => {
                 if (token !== galleryRequestToken) return;
@@ -328,11 +334,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // GBIF link
         const gbifLink = document.getElementById('gbifLink');
-        gbifLink.href = `https://www.gbif.org/species/${selectedWeed.usage_key}`;
+        // GBIF is retiring the numeric key; prefer the Catalogue of Life ID.
+        gbifLink.href = `https://www.gbif.org/species/${selectedWeed.taxon_id || selectedWeed.usage_key}`;
 
         // Photos are fetched independently so a slow or failing GBIF call never
         // delays the regulation summary, which is the page's real payload.
-        renderGallery(selectedWeed.usage_key, selectedWeed.canonical_name);
+        renderGallery(selectedWeed.species_id, selectedWeed.usage_key, selectedWeed.canonical_name);
 
         // Fetch regulation jurisdictions by stable species_id. GBIF is not unique.
         const speciesLookupId = selectedWeed.species_id || selectedWeed.id;
@@ -457,6 +464,7 @@ document.addEventListener('DOMContentLoaded', function () {
             species_id: weedData.species_id,
             slug: weedData.slug,
             usage_key: weedData.usage_key,
+            taxon_id: weedData.taxon_id,
             lifeform_final: weedData.lifeform_final,
             lifespan_final: weedData.lifespan_final,
             habitat_final: weedData.habitat_final,

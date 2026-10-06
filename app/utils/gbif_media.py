@@ -3,7 +3,7 @@
 The public surface is one function::
 
     fetch_species_photos(usage_key, base_url=..., timeout_seconds=..., limit=...,
-                         cache_ttl_seconds=..., user_agent=...)
+                         cache_ttl_seconds=..., user_agent=..., taxon_id=..., checklist_key=...)
         -> list of {"thumbnail_url", "full_url", "creator", "licence", "licence_url",
                     "occurrence_url", "publisher"}
 
@@ -25,6 +25,15 @@ Why two GBIF calls' worth of machinery for one image:
   leading path segments (``480x480`` crops to a square, ``fit-in/1600x1600`` letterboxes).
   Serving through the cache rather than hot-linking the source means we get GBIF's CDN,
   consistent sizing, and no traffic sent to individual herbaria or S3 buckets.
+
+Two kinds of taxon key:
+
+  ``usage_key`` is the numeric GBIF backbone key (``5376961``). ``taxon_id`` is the
+  newer Catalogue of Life (COL XR) ID (``6P8ZF``), stored as ``plants.gbif_taxon_id``.
+  GBIF's occurrence search only understands a COL ID when ``checklistKey`` names the
+  COL dataset; without it the ID is read as a backbone key and the search returns 0
+  results rather than an error. So the COL path always sends both, and the numeric
+  key remains the fallback for rows (or older data releases) without a COL ID.
 
 Weeds are photogenic in inconsistent ways -- one canonical image rarely exists, and a
 herbarium sheet looks nothing like a live plant -- so callers get a small ranked set
@@ -70,6 +79,10 @@ _TAXON_CACHE_TTL_SECONDS = 604800
 # Empty results are re-checked sooner than populated ones: "no photos yet" is the
 # state most likely to change, and it is also what a transient GBIF outage looks like.
 _EMPTY_RESULT_TTL_SECONDS = 900
+
+# COL IDs are short alphanumerics ("6P8ZF", "R4V2"). Anything else is rejected rather
+# than passed through to GBIF.
+_TAXON_ID_PATTERN = re.compile(r"^[A-Za-z0-9]{1,16}$")
 
 _CC_PATTERN = re.compile(
     r"creativecommons\.org/(licenses|publicdomain)/([a-z-]+)/(\d(?:\.\d)?)",
@@ -138,9 +151,43 @@ def _resolve_accepted_key(endpoint: _Endpoint, usage_key: int) -> int:
     return resolved
 
 
-def _search_occurrences(endpoint: _Endpoint, usage_key: int, human_only: bool) -> list:
+def _v2_base_url(base_url: str) -> str:
+    """The species-match API that understands COL IDs is v2; occurrence search is v1."""
+    return re.sub(r"/v1$", "/v2", base_url.rstrip("/"))
+
+
+def _resolve_accepted_taxon_id(endpoint: _Endpoint, taxon_id: str, checklist_key: str) -> str:
+    """COL counterpart of :func:`_resolve_accepted_key`.
+
+    Same failure mode: a synonym ID still resolves but holds a fraction of the
+    occurrences (``Cardaria draba`` ``R4V2``: 1,664 with images; the accepted
+    ``Lepidium draba`` ``6P8ZF``: 31,370). GBIF's v2 match API, given ``usageKey``,
+    returns the accepted usage alongside the synonym.
+    """
+    cache_key = ("accepted-col", checklist_key, taxon_id)
+    cached = _cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    resolved = taxon_id
+    try:
+        params = urlencode({"usageKey": taxon_id, "checklistKey": checklist_key})
+        v2 = endpoint._replace(base_url=_v2_base_url(endpoint.base_url))
+        record = _fetch_json(v2, f"/species/match?{params}")
+        status = str((record.get("usage") or {}).get("status") or "").upper()
+        accepted = (record.get("acceptedUsage") or {}).get("key")
+        if accepted and status.endswith("SYNONYM") and _TAXON_ID_PATTERN.match(str(accepted)):
+            resolved = str(accepted)
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError, AttributeError):
+        pass  # Fall back to the stored ID; a partial gallery beats none.
+
+    _cache.put(cache_key, resolved, _TAXON_CACHE_TTL_SECONDS)
+    return resolved
+
+
+def _search_occurrences(endpoint: _Endpoint, taxon_params: dict, human_only: bool) -> list:
     params = {
-        "taxonKey": int(usage_key),
+        **taxon_params,
         "mediaType": "StillImage",
         "limit": _SEARCH_PAGE_SIZE,
     }
@@ -305,21 +352,32 @@ def fetch_species_photos(
     limit: int = 6,
     cache_ttl_seconds: int = 86400,
     user_agent: str = DEFAULT_USER_AGENT,
+    taxon_id: str = None,
+    checklist_key: str = None,
 ) -> list:
-    """Return up to ``limit`` display-ready photographs for a GBIF taxon key.
+    """Return up to ``limit`` display-ready photographs for a GBIF taxon.
+
+    Uses the COL ``taxon_id`` when both it and ``checklist_key`` are given, otherwise
+    the numeric backbone ``usage_key``.
 
     Never raises: a GBIF outage, timeout or malformed payload yields an empty list,
     because a missing gallery must not break the species page.
     """
-    try:
-        key = int(usage_key)
-    except (TypeError, ValueError):
-        return []
-    if key <= 0:
-        return []
+    taxon_id = str(taxon_id or "").strip()
+    checklist_key = str(checklist_key or "").strip()
+    use_col = bool(taxon_id and checklist_key and _TAXON_ID_PATTERN.match(taxon_id))
+
+    key = None
+    if not use_col:
+        try:
+            key = int(usage_key)
+        except (TypeError, ValueError):
+            return []
+        if key <= 0:
+            return []
 
     limit = max(1, min(int(limit or 6), 12))
-    cache_key = (key, limit)
+    cache_key = ("col", checklist_key, taxon_id, limit) if use_col else (key, limit)
 
     cached = _cache.get(cache_key)
     if cached is not None:
@@ -330,13 +388,19 @@ def fetch_species_photos(
         timeout_seconds=timeout_seconds,
         user_agent=user_agent or DEFAULT_USER_AGENT,
     )
-    search_key = _resolve_accepted_key(endpoint, key)
+    if use_col:
+        taxon_params = {
+            "taxonKey": _resolve_accepted_taxon_id(endpoint, taxon_id, checklist_key),
+            "checklistKey": checklist_key,
+        }
+    else:
+        taxon_params = {"taxonKey": _resolve_accepted_key(endpoint, key)}
     seen_creators = set()
     photos = []
 
     for human_only in (True, False):
         try:
-            records = _search_occurrences(endpoint, search_key, human_only)
+            records = _search_occurrences(endpoint, taxon_params, human_only)
         except (HTTPError, URLError, TimeoutError, OSError, ValueError):
             # Includes json.JSONDecodeError (a ValueError) and socket timeouts.
             records = []

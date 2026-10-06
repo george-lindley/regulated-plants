@@ -65,6 +65,9 @@ class Config:
    # GBIF species photo gallery
    GBIF_API_BASE_URL = os.getenv('GBIF_API_BASE_URL', 'https://api.gbif.org/v1')
    GBIF_API_TIMEOUT_SECONDS = int(os.getenv('GBIF_API_TIMEOUT_SECONDS', '8'))
+   # Catalogue of Life dataset on GBIF. plants.gbif_taxon_id values are COL IDs, and
+   # GBIF only resolves them when this is sent as checklistKey. Blank = numeric keys only.
+   GBIF_TAXON_CHECKLIST_KEY = os.getenv('GBIF_TAXON_CHECKLIST_KEY', '7ddf754f-d193-4cc9-b351-99906754a03b').strip()
    # GBIF asks integrators to put a contact URL or email in the User-Agent so they
    # can reach us about problem traffic rather than just blocking the app. Kept
    # separate from CONTACT_EMAIL (the contact-form recipient) so the address is

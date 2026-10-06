@@ -13,6 +13,18 @@ class SpeciesDatabase(DatabaseBase):
         self._slug_to_species_id = None
 
     @staticmethod
+    def _gbif_taxon_select(conn) -> str:
+        """SELECT fragment for the GBIF Catalogue of Life columns.
+
+        Releases built before ``plants.gbif_taxon_id`` existed yield NULLs, and callers
+        fall back to the numeric ``usage_key``.
+        """
+        plant_columns = {row[1] for row in conn.execute("PRAGMA table_info(plants)")}
+        if "gbif_taxon_id" in plant_columns:
+            return "p.gbif_taxon_id AS taxon_id, p.gbif_taxon_match AS taxon_match"
+        return "NULL AS taxon_id, NULL AS taxon_match"
+
+    @staticmethod
     def _primary_common_name(value: str, fallback: str = None) -> str:
         raw = (value or "").strip()
         if not raw:
@@ -67,7 +79,7 @@ class SpeciesDatabase(DatabaseBase):
             contains = f"%{query}%"
 
             cursor = conn.execute(
-                """
+                f"""
                 SELECT
                     COALESCE(NULLIF(TRIM(p.english_name), ''), p.canonical_name) AS common_name,
                     p.species_id,
@@ -75,6 +87,7 @@ class SpeciesDatabase(DatabaseBase):
                     p.family_name,
                     p.synonyms,
                     p.gbif_usage_key AS usage_key,
+                    {self._gbif_taxon_select(conn)},
                     p.lifeform_final,
                     p.lifespan_final,
                     p.habitat_final,
@@ -122,7 +135,7 @@ class SpeciesDatabase(DatabaseBase):
         conn = self.get_connection()
         try:
             row = conn.execute(
-                """
+                f"""
                 SELECT
                     COALESCE(NULLIF(TRIM(p.english_name), ''), p.canonical_name) AS common_name,
                     p.species_id,
@@ -130,6 +143,7 @@ class SpeciesDatabase(DatabaseBase):
                     p.family_name,
                     p.synonyms,
                     p.gbif_usage_key AS usage_key,
+                    {self._gbif_taxon_select(conn)},
                     p.lifeform_final,
                     p.lifespan_final,
                     p.habitat_final,
@@ -200,6 +214,26 @@ class SpeciesDatabase(DatabaseBase):
                 {"canonical_name": row["canonical_name"], "slug": species_slug(row["canonical_name"])}
                 for row in rows
             ]
+        finally:
+            conn.close()
+
+    def get_gbif_keys(self, species_id: str) -> Dict:
+        """GBIF identifiers for one species row, for the photo gallery.
+
+        ``taxon_id`` (COL XR) is None for releases built before ``plants.gbif_taxon_id``
+        existed; callers fall back to the numeric ``usage_key``.
+        """
+        conn = self.get_connection()
+        try:
+            row = conn.execute(
+                f"""
+                SELECT p.gbif_usage_key AS usage_key, {self._gbif_taxon_select(conn)}
+                FROM plants p
+                WHERE p.species_id = ?
+                """,
+                (species_id,),
+            ).fetchone()
+            return dict(row) if row else {}
         finally:
             conn.close()
 

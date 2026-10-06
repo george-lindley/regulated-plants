@@ -4,7 +4,7 @@ Flask app that presents a global dataset of regulated invasive plant species. De
 
 ## Two repos, two deployments
 
-| | `regulated_plants_app` (this repo) | `regulated_plants_data` (`../regulated_plants_data`) |
+| | `regulated_plants_app` (this repo) | `regulated_plants_data` (`../regulated-plants-data`) |
 |---|---|---|
 | Role | Public web app + landing pages + Swagger UI | Private data service: release artifacts + `/v1` REST API |
 | Visibility | Public | Private |
@@ -70,7 +70,7 @@ app/static/{css,js,img}/    one CSS file per page, one JS file per page
 
 ## Species identity — the one thing to get right
 
-Two identifiers, and they are not interchangeable:
+Three identifiers, and they are not interchangeable:
 
 - **`species_id`** (e.g. `sp_acacia_dealbata_fa2899c4`) — `TEXT NOT NULL UNIQUE`. This is the
   **stable join/lookup key**. Use it for anything that resolves to one row.
@@ -78,6 +78,14 @@ Two identifiers, and they are not interchangeable:
   (the `usageKey` from GBIF's species-match API), used for links to gbif.org and for GBIF
   occurrence/media queries. 12 rows share a key with a parent taxon (hybrids collapse onto the
   parent), and ~97 keys are genus-rank rather than species-rank.
+- **`gbif_taxon_id`** (e.g. `6P8ZF`): `TEXT`, nullable. The GBIF **Catalogue of Life (COL XR)**
+  taxon ID, from the `gbif_taxon_id` column of the species CSV (filled by the data repo's
+  `scripts/map_gbif_taxon_ids.py`). **GBIF is retiring the numeric key in favour of this.**
+  `plants.gbif_taxon_match` says how it was matched; `parent_fallback`/`genus_fallback` rows are
+  coarser than the species. GBIF only understands it with `checklistKey=GBIF_TAXON_CHECKLIST_KEY`
+  (`7ddf754f-…`): `taxonKey=6P8ZF` alone returns **0 results, not an error**. The photo gallery
+  uses it via `/species/api/photos/by-species-id/<species_id>`; gbif.org links use it too
+  (`taxon_id || usage_key`). `sameAs` uses it only for `exact`/`variant` matches.
 
 It is **not** a GBIF occurrence key. Occurrence keys are ~10 digits; taxon keys here are 7-8.
 This matters for the media API — see `app/utils/gbif_media.py`.
@@ -99,7 +107,8 @@ the old key still resolves, but **occurrences accumulate under the accepted key*
 the synonym silently returns a fraction of the data. `Cardaria draba` (3052311) has 22
 occurrences with photos; the accepted `Lepidium draba` (5376961) has 22,689.
 
-`gbif_media._resolve_accepted_key()` follows synonyms at query time, so the gallery is correct
+`gbif_media._resolve_accepted_key()` (numeric) and `_resolve_accepted_taxon_id()` (COL, via the
+v2 match API's `usageKey`) follow synonyms at query time, so the gallery is correct
 without touching the database. Anything else that queries GBIF by taxon key should do the same.
 Re-run the audit after each GBIF backbone release:
 `scripts/audit_gbif_keys.py` in the data repo is the place for it if it gets promoted from scratch.
@@ -118,7 +127,8 @@ python main.py            # http://localhost:3000
 > column, so `SpeciesDatabase.search_weeds()` (which selects `p.species_id`) raises
 > `OperationalError` against it. The species page therefore does not work in `local_sample`
 > mode. To work on the species page, point at a real artifact:
-> `DATABASE_PATH=../regulated_plants_data/data/artifacts/weeds.db`.
+> `LOCAL_SAMPLE_DB_PATH=../regulated-plants-data/data/artifacts/weeds.db` (in `local_sample` mode
+> `DATA_MODE` overwrites `DATABASE_PATH` with this, so setting `DATABASE_PATH` has no effect).
 > `state_database.py` guards for schema drift with `_supports_plant_column`;
 > `species_database.py` does not.
 

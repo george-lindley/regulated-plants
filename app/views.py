@@ -427,12 +427,19 @@ def _species_structured_data(found: dict, synonyms: list, canonical_url: str) ->
         alternate_names.insert(0, found["common_name"])
     if alternate_names:
         data["alternateName"] = alternate_names
-    if found.get("usage_key"):
-        data["sameAs"] = f"https://www.gbif.org/species/{found['usage_key']}"
+    # sameAs asserts identity, so a COL ID matched onto a parent or the genus is left out.
+    gbif_key = None
+    if found.get("taxon_id"):
+        if found.get("taxon_match") in {"exact", "variant"}:
+            gbif_key = found["taxon_id"]
+    else:
+        gbif_key = found.get("usage_key")  # release built before COL IDs
+    if gbif_key:
+        data["sameAs"] = f"https://www.gbif.org/species/{gbif_key}"
         data["identifier"] = {
             "@type": "PropertyValue",
             "propertyID": "GBIF",
-            "value": str(found["usage_key"]),
+            "value": str(gbif_key),
         }
     return data
 
@@ -478,6 +485,37 @@ def species_photos(usage_key: int):
     response = jsonify({"photos": photos})
     # Let the browser hold onto this too; the underlying images are already
     # served from GBIF's CDN with long-lived caching.
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
+@species.route("/api/photos/by-species-id/<species_id>")
+@limiter.limit("240 per hour")
+def species_photos_by_species_id(species_id: str):
+    """Photographs for one species row, preferring its GBIF Catalogue of Life ID.
+
+    Same payload as the by-key route. Looking up by species_id lets the server pick
+    the COL ID when the release has one and the numeric backbone key when it does not.
+    """
+    if not current_app.config.get("GBIF_PHOTOS_ENABLED", True):
+        return jsonify({"photos": []})
+
+    keys = _get_species_db().get_gbif_keys(species_id)
+    if not keys:
+        return jsonify({"photos": []}), 404
+
+    photos = fetch_species_photos(
+        keys.get("usage_key"),
+        base_url=current_app.config.get("GBIF_API_BASE_URL"),
+        timeout_seconds=current_app.config.get("GBIF_API_TIMEOUT_SECONDS", 6),
+        limit=current_app.config.get("GBIF_PHOTO_LIMIT", 6),
+        cache_ttl_seconds=current_app.config.get("GBIF_PHOTO_CACHE_TTL_SECONDS", 86400),
+        user_agent=current_app.config.get("GBIF_API_USER_AGENT"),
+        taxon_id=keys.get("taxon_id"),
+        checklist_key=current_app.config.get("GBIF_TAXON_CHECKLIST_KEY"),
+    )
+
+    response = jsonify({"photos": photos})
     response.headers["Cache-Control"] = "public, max-age=3600"
     return response
 
