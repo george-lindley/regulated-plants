@@ -602,6 +602,11 @@
             "type": ["string", "null"],
             "description": "GBIF Catalogue of Life (COL XR) taxon ID, e.g. \"6P8ZF\". Pass checklistKey=7ddf754f-d193-4cc9-b351-99906754a03b when querying GBIF with it."
           },
+          "gbif_taxon_match": {
+            "type": ["string", "null"],
+            "enum": ["exact", "variant", "parent_fallback", "genus_fallback", "unmatched", null],
+            "description": "How gbif_taxon_id was matched. exact/variant identify this taxon (variant = spelling variant). parent_fallback is the parent species of a hybrid or subspecies; genus_fallback is the genus only. Do not treat fallbacks as this taxon's identity."
+          },
           "canonical_name": {
             "type": "string"
           },
@@ -844,6 +849,7 @@
             "species_id": "sp_cortaderia_jubata_fc713954",
             "gbif_usage_key": 2704521,
             "gbif_taxon_id": "YHTW",
+            "gbif_taxon_match": "exact",
             "canonical_name": "Cortaderia jubata",
             "family_name": "Poaceae",
             "taxon_level": "species",
