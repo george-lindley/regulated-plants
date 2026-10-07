@@ -579,7 +579,8 @@ def _group_sources_by_country(sources: list) -> list:
     national list often covers many states or provinces (South Africa: 16
     jurisdictions, 1 source). Rows sharing an authority and source URL are one
     source, and each shows that source's latest year (e.g. USDA's 2024 seed list
-    for DC, Georgia and Rhode Island).
+    for DC, Georgia and Rhode Island). The URL is only used for that grouping; it
+    is never rendered (source URLs are not published, see CLAUDE.md).
     """
     def source_key(row):
         return (row.get("authority") or "", row.get("source_url")) if row.get("source_url") else id(row)

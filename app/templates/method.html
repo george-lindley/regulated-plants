@@ -123,10 +123,8 @@
                             {% for source in group['items'] %}
                             <tr>
                                 <td>{{ source.name }}</td>
-                                <td>
-                                    {%- if source.source_url %}<a href="{{ source.source_url }}" target="_blank" rel="noopener">{{ source.authority }}</a>
-                                    {%- else %}{{ source.authority }}{% endif -%}
-                                </td>
+                                {# No source links: source URLs are not published (anti-scraping). #}
+                                <td>{{ source.authority }}</td>
                                 <td class="doc-table-year">{{ source.updated }}</td>
                             </tr>
                             {% endfor %}
