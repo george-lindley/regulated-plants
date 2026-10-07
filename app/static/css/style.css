@@ -395,28 +395,63 @@ table.dataTable tbody td a:hover,
    }
 }
 
+/* Phones: keep the 2x2 grid from the tablet rule and shrink everything, so the
+   summary stays short and the map is visible without much scrolling. */
 @media (max-width: 575.98px) {
    .catalogue-meta-row {
-      align-items: flex-start;
-      flex-direction: column;
+      gap: 0.1rem 0.7rem;
+      padding: 0.35rem 0.75rem;
    }
 
    .catalogue-meta-separator {
       display: none;
    }
 
-   .rich-stats-grid {
-      grid-template-columns: 1fr;
+   .catalogue-meta-label {
+      font-size: 0.58rem;
    }
 
-   .rich-stat,
-   .rich-stat:nth-child(2) {
-      border-right: 0;
-      border-bottom: 1px solid var(--border-light);
+   .catalogue-meta-value {
+      font-size: 0.72rem;
    }
 
-   .rich-stat:last-child {
-      border-bottom: 0;
+   .catalogue-partners img {
+      max-height: 13px;
+   }
+
+   .rich-stat {
+      min-height: 0;
+      padding: 0.55rem 0.7rem;
+   }
+
+   .rich-stat-title {
+      margin-bottom: 0.3rem;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+   }
+
+   .rich-stat-line {
+      flex-wrap: wrap;
+      gap: 0 0.35rem;
+      margin-bottom: 0.1rem;
+   }
+
+   .rich-stat-value {
+      font-size: 1.15rem;
+   }
+
+   .rich-stat-unit {
+      font-size: 0.6rem;
+   }
+
+   .rich-stat-name {
+      font-size: 1rem;
+   }
+
+   .rich-stat-common,
+   .rich-stat-meta {
+      margin-top: 0.1rem;
+      font-size: 0.75rem;
    }
 }
 
