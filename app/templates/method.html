@@ -114,13 +114,16 @@
                     </summary>
                     <table class="doc-table">
                         <thead>
-                            <tr><th scope="col">Jurisdiction</th><th scope="col">Authority</th><th scope="col">Updated</th></tr>
+                            <tr><th scope="col">Covers</th><th scope="col">Authority</th><th scope="col">Updated</th></tr>
                         </thead>
                         <tbody>
                             {% for source in group['items'] %}
                             <tr>
                                 <td>{{ source.name }}</td>
-                                <td>{{ source.authority }}</td>
+                                <td>
+                                    {%- if source.source_url %}<a href="{{ source.source_url }}" target="_blank" rel="noopener">{{ source.authority }}</a>
+                                    {%- else %}{{ source.authority }}{% endif -%}
+                                </td>
                                 <td class="doc-table-year">{{ source.updated }}</td>
                             </tr>
                             {% endfor %}

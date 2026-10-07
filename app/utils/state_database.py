@@ -972,6 +972,7 @@ class StateDatabase(DatabaseBase):
                         ELSE COALESCE(NULLIF(TRIM(j.region), ''), j.country)
                     END AS name,
                     COALESCE(NULLIF(TRIM(j.authority_name), ''), 'Unknown') AS authority,
+                    COALESCE(TRIM(j.source_url), '') AS source_url,
                     COALESCE(
                         NULLIF(TRIM(CAST(j.last_updated_year AS TEXT)), ''),
                         NULLIF(TRIM(j.last_updated), ''),

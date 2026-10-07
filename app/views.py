@@ -563,22 +563,44 @@ def index():
         current_app.logger.error(f"Error loading methodology sources from database: {e}")
         sources = []
 
+    source_groups = _group_sources_by_country(sources)
     return render_template(
         "method.html",
-        source_groups=_group_sources_by_country(sources),
-        source_count=len(sources),
+        source_groups=source_groups,
+        source_count=sum(len(group["items"]) for group in source_groups),
     )
 
 
 def _group_sources_by_country(sources: list) -> list:
-    """Sources grouped for the methodology index, each with its latest update year."""
+    """Distinct sources per country for the methodology index.
+
+    The query returns one row per jurisdiction, but one national list often covers
+    every state or province (South Africa: 16 provinces, one source). Rows sharing
+    an authority and source URL are merged into one source that lists what it covers.
+    """
     groups = {}
-    for source in sources:
-        groups.setdefault(source.get("country") or "Other", []).append(source)
+    for row in sources:
+        country = row.get("country") or "Other"
+        key = (row.get("authority") or "", row.get("source_url") or "") if row.get("source_url") else id(row)
+        merged = groups.setdefault(country, {}).setdefault(
+            key, {"authority": row.get("authority"), "source_url": row.get("source_url"), "covers": [], "years": []}
+        )
+        if row.get("name") and row["name"] not in merged["covers"]:
+            merged["covers"].append(row["name"])
+        if str(row.get("updated", "")).isdigit():
+            merged["years"].append(str(row["updated"]))
 
     result = []
-    for country, items in groups.items():
-        years = [str(item.get("updated")) for item in items if str(item.get("updated", "")).isdigit()]
+    for country, by_source in groups.items():
+        items = []
+        for merged in by_source.values():
+            items.append({
+                "name": ", ".join(merged["covers"]),
+                "authority": merged["authority"],
+                "source_url": merged["source_url"],
+                "updated": max(merged["years"]) if merged["years"] else "Unknown",
+            })
+        years = [item["updated"] for item in items if item["updated"].isdigit()]
         result.append({"country": country, "items": items, "latest_year": max(years) if years else None})
     return sorted(result, key=lambda group: group["country"])
 
