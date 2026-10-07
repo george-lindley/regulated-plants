@@ -126,17 +126,20 @@
         padding: 0.65rem 0 0;
     }
     
+    /* One row of three short toggles ("Regional / National / International")
+       instead of three full-width lines, so the map sits higher on phones. */
     .toggle-controls .form-check {
         padding: 0.1rem 0;
-        width: 100%;
         margin-left: 0 !important;
         padding-left: 0 !important;
     }
-    
+
     .toggle-controls .d-flex {
-        align-items: stretch !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center !important;
         width: 100%;
-        gap: 0.15rem !important;
+        gap: 0.2rem 0.9rem !important;
     }
     
     .toggle-error {
@@ -204,4 +207,17 @@
     line-height: 1.5;
     margin: 0;
     align-self: center;
+}
+
+/* Phones: smaller toggle labels and unscaled switches. Kept after the base toggle
+   rules above, which would otherwise win (same specificity, later in the file). */
+@media (max-width: 767.98px) {
+    .toggle-controls .toggle-label {
+        margin-left: 0.35rem;
+        font-size: 0.9rem;
+    }
+
+    .toggle-controls .form-check-input {
+        transform: none;
+    }
 }
