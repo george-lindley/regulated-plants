@@ -1345,4 +1345,9 @@ table.dataTable tbody tr:hover {
     .footer-logo img {
         max-height: 40px;
     }
+
+    /* Keep "© 2026 Regulated Plants Database · Privacy · Terms" on one line. */
+    .footer p {
+        font-size: 0.85rem;
+    }
 }
