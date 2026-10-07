@@ -551,7 +551,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             const speciesUrl = row.species_id
                                 ? `/species/?species_id=${encodeURIComponent(row.species_id)}`
                                 : `/species/?name=${encodeURIComponent(data)}`;
-                            return `<a href="${speciesUrl}" class="species-link" target="_blank"><em>${escapeHtml(data)}</em></a>`;
+                            const commonName = primaryCommonName(row.common_name);
+                            const commonLine = commonName && !String(row.common_name).includes('No English common names available')
+                                ? `<span class="species-common-sm">${escapeHtml(commonName)}</span>`
+                                : '';
+                            return `<a href="${speciesUrl}" class="species-link" target="_blank"><em>${escapeHtml(data)}</em></a>${commonLine}`;
                         }
                         return 'Unknown';
                     }
@@ -560,6 +564,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: 'common_name',
                     title: 'Common Name',
                     width: '23%',
+                    className: 'col-hide-sm',
                     render: function (data, type, row) {
                         const displayCommonName = primaryCommonName(data);
                         if (type !== 'display') return data || '';
@@ -573,6 +578,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: 'family_name',
                     title: 'Family',
                     width: '15%',
+                    className: 'col-hide-sm',
                     render: function (data) {
                         return escapeHtml(data || 'Unknown');
                     }

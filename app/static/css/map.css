@@ -221,3 +221,28 @@
         transform: none;
     }
 }
+
+/* Species table on phones: two columns (scientific name with the common name
+   beneath it, and source) instead of four squeezed ones. */
+.species-common-sm {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    #species-table .col-hide-sm {
+        display: none;
+    }
+
+    .species-common-sm {
+        display: block;
+        margin-top: 0.15rem;
+        color: #6c757d;
+        font-size: 0.85em;
+    }
+
+    #species-table td,
+    #species-table th {
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+    }
+}
