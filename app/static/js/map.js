@@ -728,6 +728,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // the map could be pinch-zoomed but never moved.
     const map = L.map('map', {
         gestureHandling: L.Browser.mobile,
+        // Fractional zoom so the portrait start view below can sit between levels.
+        zoomSnap: 0.25,
         worldCopyJump: false,
         maxBoundsViscosity: 1.0,
         attributionControl: true,
@@ -923,6 +925,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             map.options.worldCopyJump = false;
             map.setMinZoom(map.getZoom());
+
+            // Portrait maps (phones): fitting Alaska-to-New Zealand into the width
+            // leaves grey bands above and below the world. Start zoomed in so the
+            // world fills ~85% of the height, i.e. half the grey; the far east and
+            // west edges start just off-screen and the min zoom still shows all.
+            const size = map.getSize();
+            if (size.y > size.x) {
+                const fillZoom = Math.log2((size.y * 0.85) / 256);
+                if (fillZoom > map.getZoom()) {
+                    map.setView(map.getCenter(), Math.min(fillZoom, 3), { animate: false });
+                }
+            }
         })
         .catch(error => {
             console.error('Error loading map data:', error);
