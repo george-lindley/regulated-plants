@@ -723,9 +723,27 @@ class StateDatabase(DatabaseBase):
                         "count_source_level": "none",
                         "jurisdiction_match": "none",
                         "regulation_status": "unknown",
+                        "no_published_list": False,
                     }
                     for row in geo_regions
                 ]
+
+            # Countries reviewed and found to have no published national list (national
+            # jurisdiction with regulation_status = no_regulation, e.g. Malaysia, UAE).
+            # Separate from regulation_status below, which describes the *regional* level.
+            no_list_countries = set()
+            if self._supports_jurisdiction_column(conn, "regulation_status"):
+                no_list_countries = {
+                    self._canonical_country_name(row["country"])
+                    for row in conn.execute(
+                        """
+                        SELECT j.country
+                        FROM jurisdictions j
+                        WHERE j.jurisdiction_type = 'national'
+                          AND LOWER(TRIM(COALESCE(j.regulation_status, ''))) = 'no_regulation'
+                        """
+                    )
+                }
 
             national_rows = conn.execute(
                 """
@@ -923,6 +941,7 @@ class StateDatabase(DatabaseBase):
                         "count_source_level": count_source_level,
                         "jurisdiction_match": jurisdiction_match,
                         "regulation_status": regulation_status,
+                        "no_published_list": country in no_list_countries,
                         "jurisdiction_uid": jurisdiction_uid,
                         "canonical_display_name": region if region != country else country,
                     }

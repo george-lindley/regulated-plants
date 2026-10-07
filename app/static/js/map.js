@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const NO_LIST_HATCH_ID = 'rp-no-list-hatch';
 
     // Leaflet paths take any SVG paint as fillColor, so the hatch is a <pattern> in
-    // a zero-size SVG and no_regulation regions use fillColor: url(#id). Not
+    // a zero-size SVG and no-published-list countries use fillColor: url(#id). Not
     // display:none: browsers skip paint servers inside undisplayed SVGs.
     function ensureNoListHatch() {
         if (document.getElementById(NO_LIST_HATCH_ID)) return;
@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (countryFallback) {
             return {
                 count: countryFallback.count || 0,
+                no_published_list: Boolean(countryFallback.no_published_list),
                 country: canonicalCountryName(country),
                 region: canonicalRegionName(region),
                 count_source_level: 'national',
@@ -373,6 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 count_source_level: row.count_source_level || 'none',
                 jurisdiction_match: row.jurisdiction_match || 'none',
                 regulation_status: row.regulation_status || 'unknown',
+                no_published_list: Boolean(row.no_published_list),
                 jurisdiction_uid: row.jurisdiction_uid || null,
                 canonical_display_name: row.canonical_display_name || region,
                 geojson_slug: row.geojson_slug || null,
@@ -693,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function () {
             };
         }
 
-        if (data.regulation_status === 'no_regulation') {
+        if (data.no_published_list) {
             return {
                 fillColor: `url(#${NO_LIST_HATCH_ID})`,
                 weight: 1,
@@ -724,8 +726,12 @@ document.addEventListener('DOMContentLoaded', function () {
         zoomControl: true
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // CARTO Positron: plain grey/white land, no vegetation or terrain, so the
+    // choropleth colours are the only colour on the map.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
     }).addTo(map);
 
     ensureNoListHatch();

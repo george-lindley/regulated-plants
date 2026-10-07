@@ -7,8 +7,8 @@ MAP_CONFIG.geojsonPath = MAP_CONFIG.geojsonPath || "/static/data/geographic/";
 MAP_CONFIG.defaultThresholds = [0, 100, 150, 200, 250, 300];
 
 // Choropleth ramps for countries that DO have regulations. No blues, teals or
-// blue-greys: those read as sea (OSM water is #aad3df), which made Japan (teal)
-// and South Africa (blue-grey) look empty.
+// blue-greys: those read as sea, which made Japan (teal) and South Africa
+// (blue-grey) look empty.
 MAP_CONFIG.defaultColorRamps = [
   // 1. Warm yellow-green
   ["#f4fae1","#e4f2b8","#d1e98d","#bddf63","#a7d33c","#8bb71f","#6d8f0f"],
@@ -29,8 +29,8 @@ MAP_CONFIG.minRegulatedShade = 2;
 // Covered region showing 0 species under the current level toggles.
 MAP_CONFIG.zeroCountColor = "#dee2e6";
 
-// Countries reviewed and found to have no published list (regulation_status
-// no_regulation, e.g. Malaysia, UAE) are hatched; uncovered countries are not drawn.
+// Countries reviewed and found to have no published list (no_published_list from
+// /api/region-weed-counts, e.g. Malaysia, UAE) are hatched; uncovered countries are not drawn.
 MAP_CONFIG.noListHatch = { line: "#868e96", background: "#f8f9fa" };
 
 // Single-hue ramp for EU, towards EU-flag blue (#003399). Kept blue as the bloc's
