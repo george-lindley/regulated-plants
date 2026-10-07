@@ -716,6 +716,16 @@ def api_index():
     )
 
 
+def _without_source_urls(value):
+    """Drop every ``source_url`` key, recursively. Source URLs are not published on
+    the website (anti-scraping); paying API users still get them from the API itself."""
+    if isinstance(value, dict):
+        return {k: _without_source_urls(v) for k, v in value.items() if k != "source_url"}
+    if isinstance(value, list):
+        return [_without_source_urls(v) for v in value]
+    return value
+
+
 @api_page.route("/demo/regulatory-check", methods=["POST"])
 @limiter.limit(_api_demo_rate_limit)
 def demo_regulatory_check():
@@ -784,7 +794,7 @@ def demo_regulatory_check():
                 "upstream_status": upstream_response.status_code,
             }
         ), 502
-    return jsonify(payload), upstream_response.status_code
+    return jsonify(_without_source_urls(payload)), upstream_response.status_code
 
 
 @api_page.route("/docs")

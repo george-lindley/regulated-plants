@@ -155,8 +155,8 @@ Key env vars (full table in `Readme.md`): `DATA_MODE=remote_production`,
 **Source URLs are not published on the website** (decision of 2026-10-07: we don't want
 people scraping the data). Show the authority name and year, never a link to the source
 document. They may be used server-side (e.g. the method page groups jurisdictions that
-share a source by URL). Known exception: the API demo (`api_demo.js`) shows the
-`source_url` of its single, rate-limited result.
+share a source by URL). The API demo proxy (`demo_regulatory_check`) strips every
+`source_url` from the upstream response before it reaches the browser.
 
 Regulation *detail* is gated behind an approved researcher account
 (`_species_regulation_payload` in `views.py` returns only a jurisdiction count to anonymous

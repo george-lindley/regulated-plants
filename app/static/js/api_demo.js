@@ -107,16 +107,6 @@
       addFact(facts, "Classification", item.classification_raw || item.regulation_type || "Recorded regulation");
       addFact(facts, "Authority", item.authority_name || item.authority_type);
       addFact(facts, "Jurisdiction", jurisdictionName(item));
-      if (item.source_url) {
-        const source = makeElement("div", "api-demo-fact");
-        source.appendChild(makeElement("span", "api-demo-fact-label", "Source"));
-        const link = makeElement("a", "api-demo-fact-value", item.source_url);
-        link.href = item.source_url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        source.appendChild(link);
-        facts.appendChild(source);
-      }
       row.appendChild(facts);
       list.appendChild(row);
     });
