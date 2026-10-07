@@ -11,10 +11,13 @@
     border-radius: 0.25rem;
  }
  
- /* Mobile optimizations */
+ /* Mobile: most of the screen, so countries are big enough to tap. Panning is
+    two-finger (leaflet-gesture-handling), so a tall map does not trap scrolling. */
  @media (max-width: 768px) {
     #map {
-        height: 300px;
+        height: 62vh;
+        min-height: 340px;
+        max-height: 560px;
     }
  }
  
@@ -244,5 +247,30 @@
     #species-table th {
         padding-left: 0.4rem;
         padding-right: 0.4rem;
+    }
+}
+
+/* Map key: inside the map on desktop, under it on phones. */
+.legend--below-map {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .legend--in-map {
+        display: none;
+    }
+
+    .legend--below-map {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem 0.9rem;
+        margin-top: 0.4rem;
+        padding: 0.35rem 0.5rem;
+        background: transparent;
+        border: 0;
+    }
+
+    .legend--below-map div + div {
+        margin-top: 0;
     }
 }

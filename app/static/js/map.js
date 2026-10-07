@@ -723,9 +723,11 @@ document.addEventListener('DOMContentLoaded', function () {
     /******************************
      * MAP INITIALIZATION
      ******************************/
+    // Phones: one finger scrolls the page, two fingers pan/zoom the map (with a
+    // hint on one-finger drags). Previously dragging was simply off on mobile, so
+    // the map could be pinch-zoomed but never moved.
     const map = L.map('map', {
-        dragging: !L.Browser.mobile,
-        tap: !L.Browser.mobile,
+        gestureHandling: L.Browser.mobile,
         worldCopyJump: false,
         maxBoundsViscosity: 1.0,
         attributionControl: true,
@@ -742,21 +744,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     ensureNoListHatch();
 
-    const legend = L.control({ position: 'bottomleft' });
-    legend.onAdd = function () {
-        const div = L.DomUtil.create('div', 'legend');
+    function legendHtml() {
         const ramp = (MAP_CONFIG.defaultColorRamps || [[]])[0];
         const floor = MAP_CONFIG.minRegulatedShade || 0;
         const gradient = ramp.slice(floor).join(', ');
-        div.innerHTML =
-            `<div><i class="legend-swatch" style="background: linear-gradient(90deg, ${gradient})"></i>Regulated species (darker = more)</div>` +
+        return `<div><i class="legend-swatch" style="background: linear-gradient(90deg, ${gradient})"></i>Regulated species (darker = more)</div>` +
             '<div><i class="legend-swatch legend-swatch--hatch"></i>No published list</div>' +
             `<div><i class="legend-swatch" style="background: ${MAP_CONFIG.zeroCountColor || '#dee2e6'}"></i>None at selected levels</div>` +
             '<div><i class="legend-swatch legend-swatch--none"></i>Not yet covered</div>';
+    }
+
+    // Desktop: a control inside the map. Phones: the same key below the map (CSS
+    // shows one or the other), so it covers neither countries nor the attribution.
+    const legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'legend legend--in-map');
+        div.innerHTML = legendHtml();
         L.DomEvent.disableClickPropagation(div);
         return div;
     };
     legend.addTo(map);
+
+    const legendBelow = document.createElement('div');
+    legendBelow.className = 'legend legend--below-map';
+    legendBelow.innerHTML = legendHtml();
+    document.getElementById('map').insertAdjacentElement('afterend', legendBelow);
 
     /******************************
      * DATA LOADING

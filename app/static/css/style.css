@@ -430,6 +430,13 @@ table.dataTable tbody td a:hover,
       letter-spacing: 0.06em;
    }
 
+   /* Bottom row: "Most regulated jurisdiction" wraps to two lines, so give both
+      titles two lines' height and the details below them line up. */
+   .rich-stat:nth-child(n + 3) .rich-stat-title {
+      min-height: 3em;
+      line-height: 1.5;
+   }
+
    .rich-stat-line {
       flex-wrap: wrap;
       gap: 0 0.35rem;

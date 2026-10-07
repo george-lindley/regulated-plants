@@ -2,6 +2,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
 {% endblock %}
 
@@ -150,6 +151,7 @@
 
 {% block extra_js %}
 <script defer src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script defer src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
 <script defer src="{{ url_for('static', filename='js/home_highlights.js') }}"></script>
 <script>
     window.MAP_CONFIG = window.MAP_CONFIG || {};
