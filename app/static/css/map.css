@@ -63,9 +63,9 @@
     border-color: #adb5bd;
  }
 
- /* CARTO Positron land colour: uncovered countries are just the base map. */
+ /* Esri Light Gray land colour: uncovered countries are just the base map. */
  .legend-swatch--none {
-    background: #fafaf8;
+    background: #e8e8e8;
  }
 
  @media (max-width: 768px) {
