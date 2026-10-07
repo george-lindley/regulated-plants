@@ -567,41 +567,46 @@ def index():
     return render_template(
         "method.html",
         source_groups=source_groups,
-        source_count=sum(len(group["items"]) for group in source_groups),
+        source_count=sum(group["source_count"] for group in source_groups),
     )
 
 
 def _group_sources_by_country(sources: list) -> list:
-    """Distinct sources per country for the methodology index.
+    """Jurisdictions grouped by country for the methodology index.
 
-    The query returns one row per jurisdiction, but one national list often covers
-    every state or province (South Africa: 16 provinces, one source). Rows sharing
-    an authority and source URL are merged into one source that lists what it covers.
+    Every jurisdiction keeps its own row (the US is covered state by state, so a
+    missing Georgia row would look like a gap), but sources are counted once: one
+    national list often covers many states or provinces (South Africa: 16
+    jurisdictions, 1 source). Rows sharing an authority and source URL are one
+    source, and each shows that source's latest year (e.g. USDA's 2024 seed list
+    for DC, Georgia and Rhode Island).
     """
+    def source_key(row):
+        return (row.get("authority") or "", row.get("source_url")) if row.get("source_url") else id(row)
+
+    source_years = {}
+    for row in sources:
+        if str(row.get("updated", "")).isdigit():
+            key = source_key(row)
+            source_years[key] = max(source_years.get(key, ""), str(row["updated"]))
+
     groups = {}
     for row in sources:
-        country = row.get("country") or "Other"
-        key = (row.get("authority") or "", row.get("source_url") or "") if row.get("source_url") else id(row)
-        merged = groups.setdefault(country, {}).setdefault(
-            key, {"authority": row.get("authority"), "source_url": row.get("source_url"), "covers": [], "years": []}
-        )
-        if row.get("name") and row["name"] not in merged["covers"]:
-            merged["covers"].append(row["name"])
-        if str(row.get("updated", "")).isdigit():
-            merged["years"].append(str(row["updated"]))
+        item = dict(row)
+        item["updated"] = source_years.get(source_key(row), row.get("updated") or "Unknown")
+        groups.setdefault(row.get("country") or "Other", {"items": [], "keys": set()})
+        groups[row.get("country") or "Other"]["items"].append(item)
+        groups[row.get("country") or "Other"]["keys"].add(source_key(row))
 
     result = []
-    for country, by_source in groups.items():
-        items = []
-        for merged in by_source.values():
-            items.append({
-                "name": ", ".join(merged["covers"]),
-                "authority": merged["authority"],
-                "source_url": merged["source_url"],
-                "updated": max(merged["years"]) if merged["years"] else "Unknown",
-            })
-        years = [item["updated"] for item in items if item["updated"].isdigit()]
-        result.append({"country": country, "items": items, "latest_year": max(years) if years else None})
+    for country, group in groups.items():
+        years = [item["updated"] for item in group["items"] if str(item["updated"]).isdigit()]
+        result.append({
+            "country": country,
+            "items": group["items"],
+            "source_count": len(group["keys"]),
+            "latest_year": max(years) if years else None,
+        })
     return sorted(result, key=lambda group: group["country"])
 
 

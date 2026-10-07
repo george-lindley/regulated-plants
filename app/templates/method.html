@@ -108,13 +108,16 @@
                     <summary>
                         <span class="doc-index-name">{{ 'European Union' if group.country == 'EU' else group.country }}</span>
                         <span class="doc-index-meta">
-                            {{ group['items']|length }} {{ 'source' if group['items']|length == 1 else 'sources' }}
+                            {%- set n_rows = group['items']|length %}
+                            {%- set n_sources = group.source_count %}
+                            {%- if n_rows != n_sources %}{{ n_rows }} jurisdictions &middot; {% endif -%}
+                            {{ n_sources }} {{ 'source' if n_sources == 1 else 'sources' }}
                             {%- if group.latest_year %} &middot; updated {{ group.latest_year }}{% endif %}
                         </span>
                     </summary>
                     <table class="doc-table">
                         <thead>
-                            <tr><th scope="col">Covers</th><th scope="col">Authority</th><th scope="col">Updated</th></tr>
+                            <tr><th scope="col">Jurisdiction</th><th scope="col">Authority</th><th scope="col">Updated</th></tr>
                         </thead>
                         <tbody>
                             {% for source in group['items'] %}
