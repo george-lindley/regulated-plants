@@ -110,13 +110,31 @@ document.addEventListener('DOMContentLoaded', function () {
         const thresholds = countryConfig.thresholds;
         const scheme = countryConfig.scheme;
 
-        if (value > thresholds[5]) return scheme[6];
-        if (value > thresholds[4]) return scheme[5];
-        if (value > thresholds[3]) return scheme[4];
-        if (value > thresholds[2]) return scheme[3];
-        if (value > thresholds[1]) return scheme[2];
-        if (value > thresholds[0]) return scheme[1];
-        return scheme[0];
+        let step = 0;
+        for (let i = 0; i < thresholds.length; i++) {
+            if (value > thresholds[i]) step = i + 1;
+        }
+        if (step === 0) return scheme[0];
+        const floor = MAP_CONFIG.minRegulatedShade || 0;
+        return scheme[Math.min(scheme.length - 1, Math.max(floor, step + floor - 1))];
+    }
+
+    const NO_LIST_HATCH_ID = 'rp-no-list-hatch';
+
+    // Leaflet paths take any SVG paint as fillColor, so the hatch is a <pattern> in
+    // a zero-size SVG and no_regulation regions use fillColor: url(#id). Not
+    // display:none: browsers skip paint servers inside undisplayed SVGs.
+    function ensureNoListHatch() {
+        if (document.getElementById(NO_LIST_HATCH_ID)) return;
+        const hatch = MAP_CONFIG.noListHatch || { line: '#868e96', background: '#f8f9fa' };
+        const holder = document.createElement('div');
+        holder.innerHTML =
+            '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>' +
+            `<pattern id="${NO_LIST_HATCH_ID}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">` +
+            `<rect width="8" height="8" fill="${hatch.background}"/>` +
+            `<line x1="0" y1="0" x2="0" y2="8" stroke="${hatch.line}" stroke-width="2"/>` +
+            '</pattern></defs></svg>';
+        document.body.appendChild(holder.firstChild);
     }
 
     function slugify(value) {
@@ -664,14 +682,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const data = getRegionData(geoRegionId, country, region);
         const weedCount = data.count || 0;
-        const locationLabel = formatLocation(region, country);
+
+        if (weedCount > 0) {
+            return {
+                fillColor: getColor(weedCount, country),
+                weight: 1,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: 0.8
+            };
+        }
+
+        if (data.regulation_status === 'no_regulation') {
+            return {
+                fillColor: `url(#${NO_LIST_HATCH_ID})`,
+                weight: 1,
+                opacity: 1,
+                color: '#adb5bd',
+                fillOpacity: 0.85
+            };
+        }
 
         return {
-            fillColor: getColor(weedCount, country),
+            fillColor: MAP_CONFIG.zeroCountColor || '#dee2e6',
             weight: 1,
             opacity: 1,
             color: 'white',
-            fillOpacity: 0.7
+            fillOpacity: 0.8
         };
     }
 
@@ -690,6 +727,24 @@ document.addEventListener('DOMContentLoaded', function () {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
+    ensureNoListHatch();
+
+    const legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'legend');
+        const ramp = (MAP_CONFIG.defaultColorRamps || [[]])[0];
+        const floor = MAP_CONFIG.minRegulatedShade || 0;
+        const gradient = ramp.slice(floor).join(', ');
+        div.innerHTML =
+            `<div><i class="legend-swatch" style="background: linear-gradient(90deg, ${gradient})"></i>Regulated species (darker = more)</div>` +
+            '<div><i class="legend-swatch legend-swatch--hatch"></i>No published list</div>' +
+            `<div><i class="legend-swatch" style="background: ${MAP_CONFIG.zeroCountColor || '#dee2e6'}"></i>None at selected levels</div>` +
+            '<div><i class="legend-swatch legend-swatch--none"></i>Not yet covered</div>';
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+    };
+    legend.addTo(map);
 
     /******************************
      * DATA LOADING

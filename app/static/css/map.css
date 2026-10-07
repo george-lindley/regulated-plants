@@ -32,25 +32,45 @@
     animation: highlight 1s ease-out;
  }
  
- /* Legend styling */
+ /* Legend (Leaflet control, bottom-left). Flat house style: hairline border, no shadow. */
  .legend {
-    background: rgba(255,255,255,0.9) !important;
-    padding: 6px 8px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    line-height: 1.4;
+    font-size: 0.8rem;
+    color: #212529;
  }
- 
- .legend i {
+
+ .legend div + div {
+    margin-top: 0.2rem;
+ }
+
+ .legend-swatch {
     display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
+    width: 1.6rem;
+    height: 0.8rem;
+    margin-right: 0.45rem;
+    vertical-align: -0.1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 2px;
  }
- 
- .legend div {
-    margin-bottom: 5px;
-    font-size: 14px;
+
+ /* Mirrors the SVG pattern in map.js ensureNoListHatch(). */
+ .legend-swatch--hatch {
+    background: repeating-linear-gradient(45deg, #868e96 0 2px, #f8f9fa 2px 5.6px);
+    border-color: #adb5bd;
+ }
+
+ .legend-swatch--none {
+    background: #f2efe9;
+ }
+
+ @media (max-width: 768px) {
+    .legend {
+        font-size: 0.7rem;
+    }
  }
 
 /* Error Messages */
