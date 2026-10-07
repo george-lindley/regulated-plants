@@ -152,8 +152,8 @@ Key env vars (full table in `Readme.md`): `DATA_MODE=remote_production`,
 
 ## Auth posture
 
-**Source URLs are not published on the website** (decision of 2026-10-07: we don't want
-people scraping the data). Show the authority name and year, never a link to the source
+**Source URLs are not published** — not on the website, not in the `/v1` API (decision of
+2026-10-07: we don't want people scraping the data). Show the authority name and year, never a link to the source
 document. They may be used server-side (e.g. the method page groups jurisdictions that
 share a source by URL). The API demo proxy (`demo_regulatory_check`) strips every
 `source_url` from the upstream response before it reaches the browser.

@@ -711,10 +711,6 @@
           "authority_type": {
             "type": ["string", "null"]
           },
-          "source_url": {
-            "type": ["string", "null"],
-            "format": "uri"
-          },
           "match_score": {
             "type": "number",
             "minimum": 0,
@@ -751,10 +747,6 @@
           },
           "authority_type": {
             "type": ["string", "null"]
-          },
-          "source_url": {
-            "type": ["string", "null"],
-            "format": "uri"
           },
           "last_updated": {
             "type": ["string", "null"]
@@ -873,8 +865,7 @@
             "jurisdiction_type": "region",
             "regulation_status": "regulated",
             "authority_name": "California Department of Food and Agriculture",
-            "authority_type": "State Gov",
-            "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf"
+            "authority_type": "State Gov"
           },
           "regulations": [
             {
@@ -884,7 +875,6 @@
               "note": "CCR 4557",
               "authority_name": "California Department of Food and Agriculture",
               "authority_type": "State Gov",
-              "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf",
               "last_updated": null,
               "last_updated_year": 2021,
               "source_notes": "Food and Agricultural Code 5004",
@@ -974,7 +964,6 @@
               "regulation_status": "regulated",
               "authority_name": "California Department of Food and Agriculture",
               "authority_type": "State Gov",
-              "source_url": "https://www.cdfa.ca.gov/plant/ipc/encycloweedia/pdf/CaliforniaNoxiousWeeds.pdf",
               "match_score": 1
             }
           ],
