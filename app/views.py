@@ -371,6 +371,9 @@ def detail(slug: str):
     species_db = _get_species_db()
     found = species_db.get_species_by_slug(slug)
     if not found:
+        renamed_to = species_db.get_slug_redirect(slug)
+        if renamed_to:
+            return redirect(url_for("species.detail", slug=renamed_to), code=301)
         return render_template("species.html", species=None, missing_slug=slug), 404
 
     canonical_url = f"{current_app.config['SITE_URL']}{url_for('species.detail', slug=slug)}"
@@ -428,12 +431,7 @@ def _species_structured_data(found: dict, synonyms: list, canonical_url: str) ->
     if alternate_names:
         data["alternateName"] = alternate_names
     # sameAs asserts identity, so a COL ID matched onto a parent or the genus is left out.
-    gbif_key = None
-    if found.get("taxon_id"):
-        if found.get("taxon_match") in {"exact", "variant"}:
-            gbif_key = found["taxon_id"]
-    else:
-        gbif_key = found.get("usage_key")  # release built before COL IDs
+    gbif_key = found.get("taxon_id") if found.get("taxon_match") in {"exact", "variant"} else None
     if gbif_key:
         data["sameAs"] = f"https://www.gbif.org/species/{gbif_key}"
         data["identifier"] = {
@@ -459,43 +457,15 @@ def species_by_id(species_id: str):
     return jsonify(result)
 
 
-@species.route("/api/photos/by-key/<int:usage_key>")
-@limiter.limit("240 per hour")
-def species_photos(usage_key: int):
-    """Photographs of a species, sourced from GBIF occurrence media.
-
-    Public on purpose: unlike regulation detail, these are third-party CC-licensed
-    images that carry no dataset value of ours. Keyed by GBIF usage key rather than
-    species_id because GBIF itself only knows the taxon key -- the small number of
-    hybrids that share a parent key will show the parent taxon's photos, which is
-    the right answer anyway.
-    """
-    if not current_app.config.get("GBIF_PHOTOS_ENABLED", True):
-        return jsonify({"photos": []})
-
-    photos = fetch_species_photos(
-        usage_key,
-        base_url=current_app.config.get("GBIF_API_BASE_URL"),
-        timeout_seconds=current_app.config.get("GBIF_API_TIMEOUT_SECONDS", 6),
-        limit=current_app.config.get("GBIF_PHOTO_LIMIT", 6),
-        cache_ttl_seconds=current_app.config.get("GBIF_PHOTO_CACHE_TTL_SECONDS", 86400),
-        user_agent=current_app.config.get("GBIF_API_USER_AGENT"),
-    )
-
-    response = jsonify({"photos": photos})
-    # Let the browser hold onto this too; the underlying images are already
-    # served from GBIF's CDN with long-lived caching.
-    response.headers["Cache-Control"] = "public, max-age=3600"
-    return response
-
-
 @species.route("/api/photos/by-species-id/<species_id>")
 @limiter.limit("240 per hour")
 def species_photos_by_species_id(species_id: str):
-    """Photographs for one species row, preferring its GBIF Catalogue of Life ID.
+    """Photographs of a species, sourced from GBIF occurrence media via its GBIF
+    Catalogue of Life taxon ID.
 
-    Same payload as the by-key route. Looking up by species_id lets the server pick
-    the COL ID when the release has one and the numeric backbone key when it does not.
+    Public on purpose: unlike regulation detail, these are third-party CC-licensed
+    images that carry no dataset value of ours. Hybrids and genus-level matches show
+    their parent's or genus's photos, which is the closest honest answer.
     """
     if not current_app.config.get("GBIF_PHOTOS_ENABLED", True):
         return jsonify({"photos": []})
@@ -505,14 +475,13 @@ def species_photos_by_species_id(species_id: str):
         return jsonify({"photos": []}), 404
 
     photos = fetch_species_photos(
-        keys.get("usage_key"),
+        keys.get("taxon_id"),
+        checklist_key=current_app.config.get("GBIF_TAXON_CHECKLIST_KEY"),
         base_url=current_app.config.get("GBIF_API_BASE_URL"),
         timeout_seconds=current_app.config.get("GBIF_API_TIMEOUT_SECONDS", 6),
         limit=current_app.config.get("GBIF_PHOTO_LIMIT", 6),
         cache_ttl_seconds=current_app.config.get("GBIF_PHOTO_CACHE_TTL_SECONDS", 86400),
         user_agent=current_app.config.get("GBIF_API_USER_AGENT"),
-        taxon_id=keys.get("taxon_id"),
-        checklist_key=current_app.config.get("GBIF_TAXON_CHECKLIST_KEY"),
     )
 
     response = jsonify({"photos": photos})
@@ -540,21 +509,6 @@ def _species_regulation_payload(regulations_by_group: dict):
     if authenticated:
         payload["regulations_by_country"] = regulations_by_group
     return jsonify(payload)
-
-
-@species.route("/api/weed-states/by-key/<int:usage_key>")
-def weed_states_by_key(usage_key: int):
-    """
-    Returns regulations grouped by:
-      - country for region/national
-      - jurisdiction_group (e.g. EU) for international
-    """
-    try:
-        regulations_by_group = _get_species_db().get_states_by_usage_key(usage_key)
-        return _species_regulation_payload(regulations_by_group)
-    except Exception as e:
-        current_app.logger.error(f"Error fetching states for usage key {usage_key}: {str(e)}")
-        return jsonify({"error": "Failed to fetch states"}), 500
 
 
 @species.route("/api/weed-states/by-species-id/<species_id>")

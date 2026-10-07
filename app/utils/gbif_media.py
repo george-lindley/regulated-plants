@@ -2,8 +2,8 @@
 
 The public surface is one function::
 
-    fetch_species_photos(usage_key, base_url=..., timeout_seconds=..., limit=...,
-                         cache_ttl_seconds=..., user_agent=..., taxon_id=..., checklist_key=...)
+    fetch_species_photos(taxon_id, checklist_key=..., base_url=..., timeout_seconds=...,
+                         limit=..., cache_ttl_seconds=..., user_agent=...)
         -> list of {"thumbnail_url", "full_url", "creator", "licence", "licence_url",
                     "occurrence_url", "publisher"}
 
@@ -12,8 +12,8 @@ scheme, licence normalisation, de-duplication and caching -- is hidden behind it
 
 Why two GBIF calls' worth of machinery for one image:
 
-  Our database stores ``plants.gbif_usage_key``, which is a GBIF *backbone taxon key*
-  (the ``usageKey`` returned by GBIF's species-match API). GBIF's image cache is keyed
+  Our database stores ``plants.gbif_taxon_id``, a GBIF Catalogue of Life (COL XR)
+  *taxon* ID (``6P8ZF``). GBIF's image cache is keyed
   by *occurrence* key -- an individual observation record -- not by taxon. So we first
   ask the occurrence search API which observations of this taxon carry photographs,
   then build a cache URL per photograph:
@@ -26,14 +26,11 @@ Why two GBIF calls' worth of machinery for one image:
   Serving through the cache rather than hot-linking the source means we get GBIF's CDN,
   consistent sizing, and no traffic sent to individual herbaria or S3 buckets.
 
-Two kinds of taxon key:
+The checklist key:
 
-  ``usage_key`` is the numeric GBIF backbone key (``5376961``). ``taxon_id`` is the
-  newer Catalogue of Life (COL XR) ID (``6P8ZF``), stored as ``plants.gbif_taxon_id``.
   GBIF's occurrence search only understands a COL ID when ``checklistKey`` names the
-  COL dataset; without it the ID is read as a backbone key and the search returns 0
-  results rather than an error. So the COL path always sends both, and the numeric
-  key remains the fallback for rows (or older data releases) without a COL ID.
+  COL dataset; without it the ID is read as one of GBIF's old numeric backbone keys
+  and the search returns 0 results rather than an error. So every search sends both.
 
 Weeds are photogenic in inconsistent ways -- one canonical image rarely exists, and a
 herbarium sheet looks nothing like a live plant -- so callers get a small ranked set
@@ -74,7 +71,7 @@ _SEARCH_PAGE_SIZE = 20
 _MIN_PHOTOS_BEFORE_FALLBACK = 3
 
 _CACHE_MAX_ENTRIES = 2048
-# Backbone taxonomy moves on the order of months; hold synonym resolutions a week.
+# Taxonomy moves on the order of months; hold synonym resolutions a week.
 _TAXON_CACHE_TTL_SECONDS = 604800
 # Empty results are re-checked sooner than populated ones: "no photos yet" is the
 # state most likely to change, and it is also what a transient GBIF outage looks like.
@@ -118,51 +115,22 @@ def _fetch_json(endpoint: _Endpoint, path: str) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
-def _resolve_accepted_key(endpoint: _Endpoint, usage_key: int) -> int:
-    """Follow a synonym key to the taxon GBIF currently accepts.
-
-    GBIF's backbone periodically reclassifies a name as a synonym of another
-    taxon. The old key keeps resolving -- nothing 404s -- but occurrences pile up
-    under the *accepted* key, so querying the synonym silently returns a fraction
-    of the images. Measured on our own data: ``Cardaria draba`` (3052311) has 22
-    occurrences with photos, while the accepted ``Lepidium draba`` (5376961) has
-    22,689.
-
-    Resolving here rather than in the database keeps the stored key stable for
-    citation and keeps the gallery correct even as the backbone shifts underneath
-    us. Costs one extra ~0.2s call on a cold lookup, then it is cached.
-    """
-    cache_key = ("accepted", int(usage_key))
-    cached = _cache.get(cache_key)
-    if cached is not None:
-        return cached
-
-    resolved = int(usage_key)
-    try:
-        record = _fetch_json(endpoint, f"/species/{int(usage_key)}")
-        status = str(record.get("taxonomicStatus") or "").upper()
-        accepted = record.get("acceptedKey")
-        if accepted and status.endswith("SYNONYM"):
-            resolved = int(accepted)
-    except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError):
-        pass  # Fall back to the stored key; a partial gallery beats none.
-
-    _cache.put(cache_key, resolved, _TAXON_CACHE_TTL_SECONDS)
-    return resolved
-
-
 def _v2_base_url(base_url: str) -> str:
     """The species-match API that understands COL IDs is v2; occurrence search is v1."""
     return re.sub(r"/v1$", "/v2", base_url.rstrip("/"))
 
 
 def _resolve_accepted_taxon_id(endpoint: _Endpoint, taxon_id: str, checklist_key: str) -> str:
-    """COL counterpart of :func:`_resolve_accepted_key`.
+    """Follow a synonym ID to the taxon GBIF currently accepts.
 
-    Same failure mode: a synonym ID still resolves but holds a fraction of the
-    occurrences (``Cardaria draba`` ``R4V2``: 1,664 with images; the accepted
-    ``Lepidium draba`` ``6P8ZF``: 31,370). GBIF's v2 match API, given ``usageKey``,
-    returns the accepted usage alongside the synonym.
+    A synonym ID keeps resolving -- nothing 404s -- but occurrences pile up under the
+    *accepted* taxon, so querying the synonym silently returns a fraction of the images
+    (``Cardaria draba`` ``R4V2``: 1,664 with images; the accepted ``Lepidium draba``
+    ``6P8ZF``: 31,370). GBIF's v2 match API, given ``usageKey``, returns the accepted
+    usage alongside the synonym.
+
+    Resolving here rather than in the database keeps the stored ID stable and the
+    gallery correct as the taxonomy shifts. Costs one ~0.2s call, then it is cached.
     """
     cache_key = ("accepted-col", checklist_key, taxon_id)
     cached = _cache.get(cache_key)
@@ -346,38 +314,26 @@ _cache = _PhotoCache()
 # Public interface
 # ----------------------------
 def fetch_species_photos(
-    usage_key,
+    taxon_id,
+    checklist_key: str,
     base_url: str = DEFAULT_BASE_URL,
     timeout_seconds: int = 8,
     limit: int = 6,
     cache_ttl_seconds: int = 86400,
     user_agent: str = DEFAULT_USER_AGENT,
-    taxon_id: str = None,
-    checklist_key: str = None,
 ) -> list:
-    """Return up to ``limit`` display-ready photographs for a GBIF taxon.
-
-    Uses the COL ``taxon_id`` when both it and ``checklist_key`` are given, otherwise
-    the numeric backbone ``usage_key``.
+    """Return up to ``limit`` display-ready photographs for a GBIF COL taxon ID.
 
     Never raises: a GBIF outage, timeout or malformed payload yields an empty list,
     because a missing gallery must not break the species page.
     """
     taxon_id = str(taxon_id or "").strip()
     checklist_key = str(checklist_key or "").strip()
-    use_col = bool(taxon_id and checklist_key and _TAXON_ID_PATTERN.match(taxon_id))
-
-    key = None
-    if not use_col:
-        try:
-            key = int(usage_key)
-        except (TypeError, ValueError):
-            return []
-        if key <= 0:
-            return []
+    if not (taxon_id and checklist_key and _TAXON_ID_PATTERN.match(taxon_id)):
+        return []
 
     limit = max(1, min(int(limit or 6), 12))
-    cache_key = ("col", checklist_key, taxon_id, limit) if use_col else (key, limit)
+    cache_key = (checklist_key, taxon_id, limit)
 
     cached = _cache.get(cache_key)
     if cached is not None:
@@ -388,13 +344,10 @@ def fetch_species_photos(
         timeout_seconds=timeout_seconds,
         user_agent=user_agent or DEFAULT_USER_AGENT,
     )
-    if use_col:
-        taxon_params = {
-            "taxonKey": _resolve_accepted_taxon_id(endpoint, taxon_id, checklist_key),
-            "checklistKey": checklist_key,
-        }
-    else:
-        taxon_params = {"taxonKey": _resolve_accepted_key(endpoint, key)}
+    taxon_params = {
+        "taxonKey": _resolve_accepted_taxon_id(endpoint, taxon_id, checklist_key),
+        "checklistKey": checklist_key,
+    }
     seen_creators = set()
     photos = []
 

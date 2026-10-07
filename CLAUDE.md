@@ -17,6 +17,7 @@ They are coupled only by an HTTP pull. **The web app never writes to the data se
 
 ```
 scientist CSVs                     (data repo: preprocessing_utils/data/current/)
+  -> scripts/assign_species_ids.py  numbers new species, links new regulation rows
   -> create_database.py            builds data/artifacts/weeds.db + validation_report.json
   -> scripts/generate_manifest.py  cuts an immutable release, flips data/manifest.json
   -> Railway (data service)        serves /manifest.json + /releases/<ver>/artifacts/...  (bearer auth)
@@ -70,48 +71,56 @@ app/static/{css,js,img}/    one CSS file per page, one JS file per page
 
 ## Species identity — the one thing to get right
 
-Three identifiers, and they are not interchangeable:
+Two identifiers, and they are not interchangeable:
 
-- **`species_id`** (e.g. `sp_acacia_dealbata_fa2899c4`) — `TEXT NOT NULL UNIQUE`. This is the
-  **stable join/lookup key**. Use it for anything that resolves to one row.
-- **`gbif_usage_key`** — `INTEGER NOT NULL`, **not unique**. It is a GBIF *backbone taxon key*
-  (the `usageKey` from GBIF's species-match API), used for links to gbif.org and for GBIF
-  occurrence/media queries. 12 rows share a key with a parent taxon (hybrids collapse onto the
-  parent), and ~97 keys are genus-rank rather than species-rank.
-- **`gbif_taxon_id`** (e.g. `6P8ZF`): `TEXT`, nullable. The GBIF **Catalogue of Life (COL XR)**
-  taxon ID, from the `gbif_taxon_id` column of the species CSV (filled by the data repo's
-  `scripts/map_gbif_taxon_ids.py`). **GBIF is retiring the numeric key in favour of this.**
-  `plants.gbif_taxon_match` says how it was matched; `parent_fallback`/`genus_fallback` rows are
-  coarser than the species. GBIF only understands it with `checklistKey=GBIF_TAXON_CHECKLIST_KEY`
-  (`7ddf754f-…`): `taxonKey=6P8ZF` alone returns **0 results, not an error**. The photo gallery
-  uses it via `/species/api/photos/by-species-id/<species_id>`; gbif.org links use it too
-  (`taxon_id || usage_key`). `sameAs` uses it only for `exact`/`variant` matches.
+- **`species_id`** (e.g. `RP000487`) — `TEXT NOT NULL UNIQUE`, **ours**. One per regulated plant,
+  **never changed** (not on rename, not when its GBIF taxon changes) and **never reused**. It is the
+  join/lookup key for everything: regulations, the web app's APIs, the `/v1` API. Issued only by
+  the data repo's `scripts/assign_species_ids.py`; every ID ever issued is in
+  `preprocessing_utils/data/species_ids.csv` (with the pre-2026-10-07 `sp_<name>_<hash>` ID as
+  `legacy_species_id`). Those legacy IDs embedded names, which went stale on rename; that is why
+  they were replaced.
+- **`gbif_taxon_id`** (e.g. `6P8ZF`) — `TEXT`, nullable, **not unique**: GBIF's **Catalogue of Life
+  (COL XR)** taxon ID. Reference data, not identity. Hybrids may share a parent's ID and species
+  with no exact match share their genus's (`plants.gbif_taxon_match`: `exact`, `variant`,
+  `parent_fallback`, `genus_fallback`). GBIF only understands it with
+  `checklistKey=GBIF_TAXON_CHECKLIST_KEY` (`7ddf754f-…`): `taxonKey=6P8ZF` alone returns
+  **0 results, not an error**. Used for the photo gallery (`/species/api/photos/by-species-id/<id>`)
+  and gbif.org links; `sameAs` uses it only for `exact`/`variant` matches.
 
-It is **not** a GBIF occurrence key. Occurrence keys are ~10 digits; taxon keys here are 7-8.
-This matters for the media API — see `app/utils/gbif_media.py`.
+GBIF's old numeric backbone key (`gbif_usage_key`) was removed from the sheets, database, API and
+app on 2026-10-07: GBIF is retiring it. Nothing should reintroduce it.
 
-### Backbone drift — audit of 2026-08-02
+**Page URLs are names, not IDs.** `/species/<species_slug(canonical_name)>` is what partners (CABI)
+link to. Renaming a species changes its slug, so the data build records the old slug in
+`plant_slug_aliases` (it compares names with the previous release, matched by `species_id`) and
+`species.detail` 301-redirects old slugs. This only works because `species_id` survives renames.
 
-All 2,192 stored keys were checked against `api.gbif.org/v1/species/<key>`:
+### The researcher's sheets (from the researcher, 2026-10-07)
 
-| | |
-|---|---|
-| Keys that no longer resolve (404) | **0** |
-| Keys GBIF has remapped (`nubKey` != ours) | **0** |
-| Keys now flagged `SYNONYM` | **30** |
-| Keys with `DOUBTFUL` status | 6 |
-| Canonical-name drift vs our stored name | 67 (26 cosmetic `subsp.`/`var.` formatting, 41 genuine) |
+- **Matching rule:** hybrids may resolve to the parent taxon (species, subspecies or variety level);
+  every other taxon with no exact GBIF match resolves to the **genus**, never to another species.
+- **Species sheet:** `species_id` first, then `gbif_taxon_id` / `gbif_taxon_name` /
+  `gbif_taxon_match`. New species arrive with a **blank** ID; we assign it.
+- **Regulations sheet:** `species_id` (blank on new rows; we fill it), `listed_name` (the name
+  **exactly as the source document writes it**: the evidence), `gbif_taxon_id` (the taxon the
+  researcher **determined** that listing means). `assign_species_ids.py` links a row only if exactly
+  one species has that taxon ID (or its accepted taxon) **and** `listed_name` is that species' name
+  or a synonym; anything else goes to a review CSV. Rows with an ID are never re-linked.
+- In v1.4 they set renamed species' IDs to `NA` (a rename looked like a new record to them). It is
+  the same plant: same traits, same regulations. Rule given back: **same plant, keep the ID.**
+- They share each species' ID, taxon ID and canonical name with CABI.
+- Their v1.4 files came from Excel saved as Mac Roman, not UTF-8 (30 stray `0xCA` non-breaking
+  spaces); ask for "CSV UTF-8".
 
-So nothing is deprecated and nothing is about to break. The real issue is the 30 synonyms:
-the old key still resolves, but **occurrences accumulate under the accepted key**, so querying
-the synonym silently returns a fraction of the data. `Cardaria draba` (3052311) has 22
-occurrences with photos; the accepted `Lepidium draba` (5376961) has 22,689.
+### Synonyms
 
-`gbif_media._resolve_accepted_key()` (numeric) and `_resolve_accepted_taxon_id()` (COL, via the
-v2 match API's `usageKey`) follow synonyms at query time, so the gallery is correct
-without touching the database. Anything else that queries GBIF by taxon key should do the same.
-Re-run the audit after each GBIF backbone release:
-`scripts/audit_gbif_keys.py` in the data repo is the place for it if it gets promoted from scratch.
+A synonym taxon ID still resolves, but **occurrences accumulate under the accepted taxon**, so
+querying the synonym silently returns a fraction of the data (`Cardaria draba` `R4V2`: 1,664
+occurrences with photos; the accepted `Lepidium draba` `6P8ZF`: 31,370).
+`gbif_media._resolve_accepted_taxon_id()` follows synonyms at query time via the v2 match API's
+`usageKey`, so the gallery is correct without touching the database. Anything else that queries
+GBIF by taxon ID should do the same.
 
 ## Local development
 

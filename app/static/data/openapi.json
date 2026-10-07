@@ -592,11 +592,9 @@
         "required": ["species_id", "canonical_name", "has_current_regulation"],
         "properties": {
           "species_id": {
-            "type": "string"
-          },
-          "gbif_usage_key": {
-            "type": ["integer", "null"],
-            "description": "Numeric GBIF backbone taxon key. Not unique: hybrids share their parent's key."
+            "type": "string",
+            "pattern": "^RP\\d{6}$",
+            "description": "Our permanent species ID, e.g. \"RP000487\". Never changes, even when the species is renamed, and is never reused."
           },
           "gbif_taxon_id": {
             "type": ["string", "null"],
@@ -737,6 +735,10 @@
             "type": "string",
             "enum": ["raw_classification_unmapped"]
           },
+          "listed_name": {
+            "type": ["string", "null"],
+            "description": "The plant name exactly as the regulation's source document lists it."
+          },
           "classification_raw": {
             "type": ["string", "null"],
             "description": "Raw authority classification from the source data, such as `CCR 4500`, `List B`, or `Restricted`."
@@ -846,8 +848,7 @@
           "regulated": true,
           "message": "Cortaderia jubata is regulated in California, United States. Review the authority details before sale or shipment.",
           "matched_plant": {
-            "species_id": "sp_cortaderia_jubata_fc713954",
-            "gbif_usage_key": 2704521,
+            "species_id": "RP000487",
             "gbif_taxon_id": "YHTW",
             "gbif_taxon_match": "exact",
             "canonical_name": "Cortaderia jubata",
@@ -908,7 +909,7 @@
           "plant_query": "pampas grass",
           "suggestions": [
             {
-              "species_id": "sp_cortaderia_jubata_fc713954",
+              "species_id": "RP000487",
               "canonical_name": "Cortaderia jubata",
               "matched_name": "Pampas Grass",
               "alias_type": "common_name",
@@ -917,7 +918,7 @@
               "has_current_regulation": true
             },
             {
-              "species_id": "sp_cortaderia_selloana_9f9267d8",
+              "species_id": "RP000488",
               "canonical_name": "Cortaderia selloana",
               "matched_name": "Pampas Grass",
               "alias_type": "common_name",
@@ -940,7 +941,7 @@
           "message": "We could not confidently identify the plant. Ask the user to choose one of the suggested matches.",
           "matches": [
             {
-              "species_id": "sp_cortaderia_jubata_fc713954",
+              "species_id": "RP000487",
               "canonical_name": "Cortaderia jubata",
               "matched_name": "Pampas Grass",
               "alias_type": "common_name",

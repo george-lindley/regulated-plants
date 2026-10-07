@@ -16,8 +16,8 @@ class SpeciesDatabase(DatabaseBase):
     def _gbif_taxon_select(conn) -> str:
         """SELECT fragment for the GBIF Catalogue of Life columns.
 
-        Releases built before ``plants.gbif_taxon_id`` existed yield NULLs, and callers
-        fall back to the numeric ``usage_key``.
+        Releases built before ``plants.gbif_taxon_id`` existed yield NULLs (no GBIF photos
+        or link for that release).
         """
         plant_columns = {row[1] for row in conn.execute("PRAGMA table_info(plants)")}
         if "gbif_taxon_id" in plant_columns:
@@ -39,7 +39,6 @@ class SpeciesDatabase(DatabaseBase):
                 """
                 SELECT
                     p.species_id,
-                    p.gbif_usage_key AS usage_key,
                     p.canonical_name,
                     COALESCE(NULLIF(TRIM(p.english_name), ''), p.canonical_name) AS common_name,
                     p.family_name,
@@ -86,7 +85,6 @@ class SpeciesDatabase(DatabaseBase):
                     p.canonical_name,
                     p.family_name,
                     p.synonyms,
-                    p.gbif_usage_key AS usage_key,
                     {self._gbif_taxon_select(conn)},
                     p.lifeform_final,
                     p.lifespan_final,
@@ -142,7 +140,6 @@ class SpeciesDatabase(DatabaseBase):
                     p.canonical_name,
                     p.family_name,
                     p.synonyms,
-                    p.gbif_usage_key AS usage_key,
                     {self._gbif_taxon_select(conn)},
                     p.lifeform_final,
                     p.lifespan_final,
@@ -183,6 +180,33 @@ class SpeciesDatabase(DatabaseBase):
     def get_all_slugs(self) -> List[str]:
         return sorted(self._slug_index())
 
+    def get_slug_redirect(self, slug: str) -> str:
+        """Current slug for an old one, when the species has since been renamed.
+
+        Species pages are addressed by name and partners (CABI) publish those URLs, so
+        the data release keeps ``plant_slug_aliases`` (old slug -> species_id). Releases
+        without the table simply have no redirects.
+        """
+        conn = self.get_connection()
+        try:
+            has_aliases = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'plant_slug_aliases'"
+            ).fetchone()
+            if not has_aliases:
+                return ""
+            row = conn.execute(
+                """
+                SELECT p.canonical_name
+                FROM plant_slug_aliases a
+                JOIN plants p ON p.species_id = a.species_id
+                WHERE a.slug = ?
+                """,
+                (slug,),
+            ).fetchone()
+            return species_slug(row["canonical_name"]) if row else ""
+        finally:
+            conn.close()
+
     def get_species_by_slug(self, slug: str) -> Dict:
         species_id = self._slug_index().get(slug)
         if not species_id:
@@ -218,59 +242,18 @@ class SpeciesDatabase(DatabaseBase):
             conn.close()
 
     def get_gbif_keys(self, species_id: str) -> Dict:
-        """GBIF identifiers for one species row, for the photo gallery.
-
-        ``taxon_id`` (COL XR) is None for releases built before ``plants.gbif_taxon_id``
-        existed; callers fall back to the numeric ``usage_key``.
-        """
+        """GBIF Catalogue of Life identifiers for one species row, for the photo gallery."""
         conn = self.get_connection()
         try:
             row = conn.execute(
                 f"""
-                SELECT p.gbif_usage_key AS usage_key, {self._gbif_taxon_select(conn)}
+                SELECT {self._gbif_taxon_select(conn)}
                 FROM plants p
                 WHERE p.species_id = ?
                 """,
                 (species_id,),
             ).fetchone()
             return dict(row) if row else {}
-        finally:
-            conn.close()
-
-    def get_weeds_by_usage_key(self, usage_key: int) -> List[Dict]:
-        conn = self.get_connection()
-        try:
-            cursor = conn.execute(
-                """
-                SELECT
-                    p.species_id,
-                    p.gbif_usage_key AS usage_key,
-                    p.canonical_name,
-                    COALESCE(NULLIF(TRIM(p.english_name), ''), p.canonical_name) AS common_name,
-                    p.family_name,
-                    p.synonyms,
-                    j.country,
-                    j.region,
-                    j.jurisdiction_type AS jurisdiction,
-                    j.jurisdiction_group,
-                    r.classification,
-                    r.note
-                FROM regulations r
-                JOIN plants p ON p.id = r.plant_id
-                JOIN jurisdictions j ON j.id = r.jurisdiction_id
-                WHERE p.gbif_usage_key = ?
-                  AND r.is_webapp_scoped = 1
-                ORDER BY j.country, j.jurisdiction_type, j.region
-                """,
-                (usage_key,),
-            )
-            results = [dict(row) for row in cursor.fetchall()]
-            for row in results:
-                row["common_name"] = self._primary_common_name(
-                    row.get("common_name"),
-                    row.get("canonical_name"),
-                )
-            return results
         finally:
             conn.close()
 
@@ -281,7 +264,6 @@ class SpeciesDatabase(DatabaseBase):
                 """
                 SELECT
                     p.species_id,
-                    p.gbif_usage_key AS usage_key,
                     p.canonical_name,
                     COALESCE(NULLIF(TRIM(p.english_name), ''), p.canonical_name) AS common_name,
                     p.family_name,
@@ -357,7 +339,7 @@ class SpeciesDatabase(DatabaseBase):
             conn.close()
 
     def _get_states_by_plant_column(self, column: str, value) -> Dict[str, List[str]]:
-        if column not in {"species_id", "gbif_usage_key"}:
+        if column not in {"species_id"}:
             raise ValueError(f"Unsupported plant lookup column: {column}")
 
         conn = self.get_connection()
@@ -413,5 +395,3 @@ class SpeciesDatabase(DatabaseBase):
     def get_states_by_species_id(self, species_id: str) -> Dict[str, List[str]]:
         return self._get_states_by_plant_column("species_id", species_id)
 
-    def get_states_by_usage_key(self, usage_key: int) -> Dict[str, List[str]]:
-        return self._get_states_by_plant_column("gbif_usage_key", usage_key)

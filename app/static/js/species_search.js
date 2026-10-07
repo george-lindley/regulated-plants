@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
 
                         return {
-                            id: weed.species_id || weed.usage_key,
+                            id: weed.species_id,
                             text: displayCommonName
                                 ? `${displayCommonName} (${weed.canonical_name})`
                                 : `(${weed.canonical_name})`,
@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             synonyms: weed.synonyms,
                             species_id: weed.species_id,
                             slug: weed.slug,
-                            usage_key: weed.usage_key,
                             taxon_id: weed.taxon_id,
                             lifeform_final: weed.lifeform_final,
                             lifespan_final: weed.lifespan_final,
@@ -203,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return tile;
     }
 
-    function renderGallery(speciesId, usageKey, speciesName) {
+    function renderGallery(speciesId, speciesName) {
         const gallery = document.getElementById('speciesGallery');
         const grid = document.getElementById('speciesGalleryGrid');
         if (!gallery || !grid) return;
@@ -211,16 +210,11 @@ document.addEventListener('DOMContentLoaded', function () {
         gallery.classList.add('d-none');
         grid.innerHTML = '';
 
-        if (!speciesId && !usageKey) return;
+        if (!speciesId) return;
 
         const token = ++galleryRequestToken;
-        // by-species-id lets the server use the GBIF Catalogue of Life ID when the
-        // data release has one.
-        const photosUrl = speciesId
-            ? `/species/api/photos/by-species-id/${encodeURIComponent(speciesId)}`
-            : `/species/api/photos/by-key/${encodeURIComponent(usageKey)}`;
 
-        fetch(photosUrl)
+        fetch(`/species/api/photos/by-species-id/${encodeURIComponent(speciesId)}`)
             .then(response => (response.ok ? response.json() : { photos: [] }))
             .then(data => {
                 if (token !== galleryRequestToken) return;
@@ -334,18 +328,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // GBIF link
         const gbifLink = document.getElementById('gbifLink');
-        // GBIF is retiring the numeric key; prefer the Catalogue of Life ID.
-        gbifLink.href = `https://www.gbif.org/species/${selectedWeed.taxon_id || selectedWeed.usage_key}`;
+        gbifLink.href = selectedWeed.taxon_id
+            ? `https://www.gbif.org/species/${encodeURIComponent(selectedWeed.taxon_id)}`
+            : 'https://www.gbif.org/';
 
         // Photos are fetched independently so a slow or failing GBIF call never
         // delays the regulation summary, which is the page's real payload.
-        renderGallery(selectedWeed.species_id, selectedWeed.usage_key, selectedWeed.canonical_name);
+        renderGallery(selectedWeed.species_id, selectedWeed.canonical_name);
 
-        // Fetch regulation jurisdictions by stable species_id. GBIF is not unique.
+        // Fetch regulation jurisdictions by our permanent species_id.
         const speciesLookupId = selectedWeed.species_id || selectedWeed.id;
-        const statesUrl = speciesLookupId
-            ? `/species/api/weed-states/by-species-id/${encodeURIComponent(speciesLookupId)}`
-            : `/species/api/weed-states/by-key/${selectedWeed.usage_key}`;
+        const statesUrl = `/species/api/weed-states/by-species-id/${encodeURIComponent(speciesLookupId)}`;
 
         fetch(statesUrl)
             .then(response => {
@@ -453,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const formattedData = {
-            id: weedData.species_id || weedData.usage_key,
+            id: weedData.species_id,
             text: displayCommonName
                 ? `${displayCommonName} (${weedData.canonical_name})`
                 : `(${weedData.canonical_name})`,
@@ -463,7 +456,6 @@ document.addEventListener('DOMContentLoaded', function () {
             synonyms: weedData.synonyms,
             species_id: weedData.species_id,
             slug: weedData.slug,
-            usage_key: weedData.usage_key,
             taxon_id: weedData.taxon_id,
             lifeform_final: weedData.lifeform_final,
             lifespan_final: weedData.lifespan_final,
