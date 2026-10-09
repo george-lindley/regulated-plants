@@ -3,63 +3,33 @@
    Extends the shared site stylesheet.
    ======================================== */
 
-.api-intro-box {
-   border: 1px solid var(--border-light);
-   border-radius: 0.5rem;
-   overflow: hidden;
-   background: var(--white);
-}
-
-.api-intro-copy {
-   padding: 2rem;
-}
-
-.api-hero-image {
-   min-height: 260px;
-   height: 100%;
-   background:
-      linear-gradient(90deg, rgba(21, 35, 74, 0.2), rgba(21, 35, 74, 0.02)),
-      url("../img/api-hero.png");
-   background-size: cover;
-   background-position: center;
-}
-
-.api-intro p:last-child {
-   margin-bottom: 0;
-}
-
 .api-action-row {
    display: flex;
    flex-wrap: wrap;
-   gap: 0.75rem;
+   align-items: center;
+   gap: 0.75rem 1.25rem;
    margin-top: 1.25rem;
 }
 
-.api-summary .highlight-card,
-.api-feature-card {
-   padding: 1.1rem 1.2rem;
+/* Enterprise page: plain sections, no boxes (hairline rules only between them). */
+.api-code {
+   margin: 1rem 0 0;
+   padding: 0.9rem 1rem;
+   border: 1px solid var(--border-light);
+   border-radius: 0.5rem;
+   color: var(--text-dark);
+   font-size: 0.9rem;
+   white-space: pre-wrap;
+   overflow-wrap: anywhere;
 }
 
-.api-summary .highlight-card {
-   background: var(--bg-light);
+.api-points {
+   margin: 0;
+   padding-left: 1.1rem;
 }
 
-.api-summary .highlight-metric span {
-   text-align: left;
-}
-
-.release-card-meta {
-   margin: -0.1rem 0 0.6rem;
-   color: var(--text-medium);
-   font-size: 0.88rem;
-   font-weight: 600;
-   line-height: 1.35;
-}
-
-.release-card-meta span {
-   display: block;
-   color: var(--text-muted);
-   font-weight: 500;
+.api-points li + li {
+   margin-top: 0.5rem;
 }
 
 .api-grid {
@@ -87,38 +57,9 @@
 }
 
 .api-section {
-   margin-bottom: 2rem;
-   padding-bottom: 1.5rem;
-   border-bottom: 1px solid var(--border-light);
-}
-
-.api-section:last-child {
-   border-bottom: none;
-   margin-bottom: 0;
-   padding-bottom: 0;
-}
-
-.api-code-panel {
-   border: 1px solid var(--border-light);
-   border-radius: 0.5rem;
-   overflow: hidden;
-   background: var(--bg-light);
-}
-
-.api-code-panel-header {
-   border-bottom: 1px solid var(--border-light);
-   padding: 0.85rem 1rem;
-   color: var(--text-medium);
-   font-weight: 500;
-}
-
-.api-code-panel pre {
-   margin: 0;
-   padding: 1rem;
-   white-space: pre-wrap;
-   overflow-wrap: anywhere;
-   color: var(--text-dark);
-   font-size: 0.92rem;
+   margin-top: 2.5rem;
+   padding-top: 2rem;
+   border-top: 1px solid var(--border-light);
 }
 
 .api-access-panel {
@@ -183,13 +124,11 @@
    border: 1px solid var(--border-light);
    border-radius: 0.5rem;
    background: var(--white);
-   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05);
    overflow: hidden;
 }
 
 .api-demo-form {
    padding: 1.25rem;
-   background: var(--bg-light);
    border-bottom: 1px solid var(--border-light);
 }
 
@@ -350,20 +289,10 @@
    margin-top: 1rem;
 }
 
-@media (max-width: 991.98px) {
-   .api-hero-image {
-      min-height: 260px;
-   }
-}
-
 @media (max-width: 767.98px) {
-   .api-intro-copy {
-      padding: 1.25rem;
-   }
-
    .api-action-row {
       flex-direction: column;
-      align-items: stretch;
+      align-items: flex-start;
    }
 
    .api-demo-fields {

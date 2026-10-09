@@ -7,202 +7,115 @@
 
 {% block content %}
 <h1 class="page-title">Plant Compliance for Marketplaces</h1>
-<p class="lead mb-4">
-    Check if a plant is regulated at the buyer's location before checkout, catalogue approval, or shipment.
+<p class="lead">
+    Check whether a plant is regulated at the buyer's location before checkout, catalogue approval, or shipment.
 </p>
-
-<section class="api-intro api-intro-box mb-4">
-    <div class="row g-0 align-items-stretch">
-        <div class="col-lg-7">
-            <div class="api-intro-copy">
-                <p>
-                    Built for ecommerce platforms, online marketplaces, nurseries, and compliance teams
-                    that need automated plant regulation checks to reduce restricted sales and regulatory risk.
-                </p>
-                <div class="api-action-row">
-                    <a href="{{ url_for('about.index', subject='api_access') }}#contact" class="btn btn-primary">Request Enterprise Access</a>
-                    <a href="{{ url_for('api_page.docs') }}" class="btn btn-outline-dark">Developer documentation</a>
-                    <a href="{{ url_for('api_page.terms') }}" class="btn btn-outline-dark">API terms</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="api-hero-image" role="img" aria-label="Plant ecommerce compliance workflow"></div>
-        </div>
-    </div>
-</section>
-
-<section class="home-highlights api-summary mb-4" aria-label="Enterprise summary">
-    <div class="row g-3">
-        <div class="col-12 col-md-4">
-            <div class="highlight-card">
-                <p class="highlight-label">Current Release</p>
-                {% if api_release_metrics.version %}
-                    <p class="release-card-meta">
-                        Data release {{ api_release_metrics.version }}
-                        {% if api_release_metrics.date_label %}
-                            <span>{{ api_release_metrics.date_kind|capitalize }} {{ api_release_metrics.date_label }}</span>
-                        {% endif %}
-                    </p>
-                {% endif %}
-                <div class="highlight-metric"><span>{{ api_release_metrics.species }}</span><small>taxa monitored</small></div>
-                <div class="highlight-metric"><span>{{ api_release_metrics.jurisdictions }}</span><small>jurisdictions</small></div>
-                <div class="highlight-metric"><span>{{ api_release_metrics.regulations }}</span><small>regulation rows</small></div>
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="highlight-card">
-                <p class="highlight-label">Enterprise Use Case</p>
-                <span class="highlight-common">
-                    Given a plant name and ship-to jurisdiction, return a conservative
-                    regulation signal for commercial sales, catalog review, or fulfillment.
-                </span>
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="highlight-card">
-                <p class="highlight-label">Access Model</p>
-                <span class="highlight-common">
-                    Enterprise usage is manually approved and token protected. Approved
-                    organizations receive an API token from Menacon under written access
-                    terms. Pricing, quotas, support, and renewal terms are handled by
-                    quote, invoice, payment link, or agreement. Self-serve billing may
-                    be added later. <a href="{{ url_for('api_page.terms') }}">API terms apply</a>.
-                </span>
-            </div>
-        </div>
-    </div>
-</section>
+<p>
+    For ecommerce platforms, marketplaces, nurseries and compliance teams that need automated
+    plant regulation checks.
+    {%- if api_release_metrics.species %} Covers {{ api_release_metrics.species }} taxa across
+    {{ api_release_metrics.jurisdictions }} jurisdictions.{% endif %}
+</p>
+<div class="api-action-row">
+    <a href="{{ url_for('about.index', subject='api_access') }}#contact" class="btn btn-primary">Request enterprise access</a>
+    <a href="{{ url_for('api_page.docs') }}">Developer documentation</a>
+    <a href="{{ url_for('api_page.terms') }}">API terms</a>
+</div>
 
 <section class="api-section">
-    <div class="row g-4 align-items-start">
-        <div class="col-lg-7">
-            <h2>Designed for e-commerce compliance workflows</h2>
-            <p>
-                The endpoint is intentionally conservative. It reports whether a matched
-                species has a regulation record in the requested destination jurisdiction,
-                helping teams flag products for review before they are sold or shipped.
-            </p>
-            <p class="mb-0">
-                It does not say a plant is legally allowed, banned, or prohibited to buy.
-                If a common name is ambiguous or misspelled beyond a safe threshold, the
-                service asks the user to choose from suggested species before returning a
-                regulatory result.
-            </p>
-        </div>
-        <div class="col-lg-5">
-            <div class="api-code-panel">
-                <div class="api-code-panel-header">POST /v1/regulatory-check</div>
-<pre>{
+    <h2>How it works</h2>
+    <p>
+        Send a plant name and a destination. The API reports whether that species has a
+        regulation record in that jurisdiction, so you can flag products for review before
+        they are sold or shipped.
+    </p>
+    <p>
+        It is deliberately conservative: it does not say a plant is legal or banned. If a
+        name is ambiguous or badly misspelled, it returns suggestions to choose from instead
+        of guessing.
+    </p>
+<pre class="api-code">POST /v1/regulatory-check
+{
   "plant_query": "Cortaderia jubata",
-  "ship_to": {
-    "country": "US",
-    "region": "CA"
-  }
+  "ship_to": { "country": "US", "region": "CA" }
 }</pre>
-            </div>
-        </div>
-    </div>
 </section>
 
 <section class="api-section">
-    <div class="row g-4 align-items-start">
-        <div class="col-lg-5">
-            <h2>Try the v1 check</h2>
-            <p>
-                This demo sends a live request through the same API path an enterprise
-                integration would use: one plant, one destination jurisdiction, one
-                structured regulatory response.
+    <h2>What you get</h2>
+    <ul class="api-points">
+        <li><strong>Fewer restricted sales.</strong> Flag regulated plants before checkout, catalogue approval or shipment.</li>
+        <li><strong>Real-world plant names.</strong> Scientific names, common names, synonyms and near-spellings all match.</li>
+        <li><strong>Evidence with every answer.</strong> The regulating authority, its classification and notes, and the data release used.</li>
+    </ul>
+</section>
+
+<section class="api-section">
+    <h2>Try it</h2>
+    <p>A live request through the same API an integration would use.</p>
+    <div class="api-demo-panel"
+         data-api-demo
+         data-endpoint="{{ url_for('api_page.demo_regulatory_check') }}"
+         data-csrf-token="{{ csrf_token() }}">
+        <form class="api-demo-form" data-demo-form>
+            <div class="api-demo-fields">
+                <label>
+                    <span>Plant name</span>
+                    <input class="form-control" name="plant_query" data-demo-plant value="Cortaderia jubata" required>
+                </label>
+                <label>
+                    <span>Country</span>
+                    <input class="form-control" name="country" data-demo-country value="US" required>
+                </label>
+                <label>
+                    <span>Region</span>
+                    <input class="form-control" name="region" data-demo-region value="CA">
+                </label>
+            </div>
+            <div class="api-example-row" aria-label="Example checks">
+                <button type="button"
+                        class="api-example-button"
+                        data-example-plant="Cortaderia jubata"
+                        data-example-country="US"
+                        data-example-region="CA">Scientific name</button>
+                <button type="button"
+                        class="api-example-button"
+                        data-example-plant="pampas grass"
+                        data-example-country="US"
+                        data-example-region="CA">Common name</button>
+                <button type="button"
+                        class="api-example-button"
+                        data-example-plant="Abutilon theophrsti"
+                        data-example-country="United States"
+                        data-example-region="Colorado">Misspelling</button>
+            </div>
+            <div class="api-demo-actions">
+                <button class="btn btn-primary" type="submit" data-demo-submit>Run compliance check</button>
+                <span class="api-demo-status" data-demo-status role="status" aria-live="polite"></span>
+            </div>
+        </form>
+        <div class="api-demo-result" data-demo-result hidden></div>
+        <details class="api-demo-raw" data-demo-raw-details hidden>
+            <summary>Raw response</summary>
+            <pre data-demo-raw></pre>
+        </details>
+        <noscript>
+            <p class="api-demo-noscript">
+                JavaScript is required to run the API demo from this page.
             </p>
-        </div>
-        <div class="col-lg-7">
-            <div class="api-demo-panel"
-                 data-api-demo
-                 data-endpoint="{{ url_for('api_page.demo_regulatory_check') }}"
-                 data-csrf-token="{{ csrf_token() }}">
-                <form class="api-demo-form" data-demo-form>
-                    <div class="api-demo-fields">
-                        <label>
-                            <span>Plant name</span>
-                            <input class="form-control" name="plant_query" data-demo-plant value="Cortaderia jubata" required>
-                        </label>
-                        <label>
-                            <span>Country</span>
-                            <input class="form-control" name="country" data-demo-country value="US" required>
-                        </label>
-                        <label>
-                            <span>Region</span>
-                            <input class="form-control" name="region" data-demo-region value="CA">
-                        </label>
-                    </div>
-                    <div class="api-example-row" aria-label="Example checks">
-                        <button type="button"
-                                class="api-example-button"
-                                data-example-plant="Cortaderia jubata"
-                                data-example-country="US"
-                                data-example-region="CA">Scientific name</button>
-                        <button type="button"
-                                class="api-example-button"
-                                data-example-plant="pampas grass"
-                                data-example-country="US"
-                                data-example-region="CA">Common name</button>
-                        <button type="button"
-                                class="api-example-button"
-                                data-example-plant="Abutilon theophrsti"
-                                data-example-country="United States"
-                                data-example-region="Colorado">Misspelling</button>
-                    </div>
-                    <div class="api-demo-actions">
-                        <button class="btn btn-primary" type="submit" data-demo-submit>Run compliance check</button>
-                        <span class="api-demo-status" data-demo-status role="status" aria-live="polite"></span>
-                    </div>
-                </form>
-                <div class="api-demo-result" data-demo-result hidden></div>
-                <details class="api-demo-raw" data-demo-raw-details hidden>
-                    <summary>Raw response</summary>
-                    <pre data-demo-raw></pre>
-                </details>
-                <noscript>
-                    <p class="api-demo-noscript">
-                        JavaScript is required to run the API demo from this page.
-                    </p>
-                </noscript>
-            </div>
-        </div>
+        </noscript>
     </div>
 </section>
 
 <section class="api-section">
-    <h2>What enterprise integrations get</h2>
-    <div class="api-grid">
-        <article class="api-card">
-            <h3>Avoid Restricted Sales</h3>
-            <p>Flag regulated plants before checkout, catalog approval, or shipment to a destination region.</p>
-        </article>
-        <article class="api-card">
-            <h3>Handle Real Plant Names</h3>
-            <p>Match scientific names, common names, synonyms, species IDs, and near-spellings.</p>
-        </article>
-        <article class="api-card">
-            <h3>Return Source Evidence</h3>
-            <p>Provide authority details, source URLs, raw classifications, notes, and release version.</p>
-        </article>
-    </div>
-</section>
-
-<section class="api-section">
-    <h2>Enterprise access</h2>
-    <div class="api-access-panel">
-        <p>
-            The public website is for research and reference use. Enterprise is for
-            organizations that need automated compliance checks inside commercial or
-            operational workflows.
-        </p>
-        <div class="api-action-row">
-            <a href="{{ url_for('about.index', subject='api_access') }}#contact" class="btn btn-primary">Request Enterprise Access</a>
-            <a href="{{ url_for('api_page.docs') }}" class="btn btn-outline-dark">Developer documentation</a>
-            <a href="{{ url_for('api_page.terms') }}" class="btn btn-outline-dark">API terms</a>
-        </div>
+    <h2>Access</h2>
+    <p>
+        Enterprise access is approved manually and uses an API token issued under written
+        terms. Pricing, quotas and support are agreed per organisation.
+    </p>
+    <div class="api-action-row">
+        <a href="{{ url_for('about.index', subject='api_access') }}#contact" class="btn btn-primary">Request enterprise access</a>
+        <a href="{{ url_for('api_page.terms') }}">API terms</a>
     </div>
 </section>
 {% endblock %}
