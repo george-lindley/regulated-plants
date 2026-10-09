@@ -4,100 +4,123 @@
 
 {% block content %}
 <h1 class="page-title">Full Access for Researchers</h1>
-<p class="lead mb-4">
-    Request free website access to full jurisdiction lists for research, education,
-    extension, regulation, farming, or public-interest use.
+<p class="lead">
+    Free website access to full jurisdiction lists for research, education, extension,
+    regulation, farming and public-interest use.
 </p>
 
-<section class="auth-panel auth-panel-wide auth-researcher-panel">
-    <div class="row g-0 align-items-stretch">
-        <div class="col-lg-7">
-            <div class="auth-panel-copy">
-                <h2 class="h4">Request full website access</h2>
-                <p>
-                    Tell us who you are and how you plan to use the website.
-                    Approved accounts can sign in later with a one-time email link.
-                </p>
+<div class="doc-body doc-body--single">
+    <section class="doc-section">
+        <h2>What full access includes</h2>
+        <ul class="data-list">
+            <li>The complete list of regulated plants for every jurisdiction on the map.</li>
+            <li>Regulation details on each species page: the jurisdictions, regulating authorities and classifications.</li>
+            <li>The same data releases used across the site, documented on the <a href="{{ url_for('method.index') }}">Method</a> page.</li>
+        </ul>
+        <p>
+            Without an account, the map shows a sample of each list and species pages show how many
+            jurisdictions regulate a plant, but not which.
+        </p>
+    </section>
 
-                <form class="auth-form" method="post" action="{{ url_for('auth.signup') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="next" value="{{ next_url }}">
+    <section class="doc-section">
+        <h2>How access works</h2>
+        <ol class="doc-steps">
+            <li>
+                <h3>Request access</h3>
+                <p>Tell us who you are, your organisation, and how you plan to use the data.</p>
+            </li>
+            <li>
+                <h3>We review your request</h3>
+                <p>Each request is reviewed individually, and we email you when it has been approved.</p>
+            </li>
+            <li>
+                <h3>Sign in with an email link</h3>
+                <p>There is no password: approved accounts sign in with a one-time link sent by email.</p>
+            </li>
+        </ol>
+    </section>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="full_name">Name</label>
-                        <input
-                            class="form-control"
-                            type="text"
-                            id="full_name"
-                            name="full_name"
-                            value="{{ full_name }}"
-                            autocomplete="name"
-                            maxlength="160"
-                            required
-                        >
-                    </div>
+    <section class="doc-section">
+        <h2>Request access</h2>
+        <div class="auth-form-column">
+        <form class="auth-form" method="post" action="{{ url_for('auth.signup') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ next_url }}">
 
-                    <div class="mb-3">
-                        <label class="form-label" for="email">Email address</label>
-                        <input
-                            class="form-control"
-                            type="email"
-                            id="email"
-                            name="email"
-                            value="{{ email }}"
-                            autocomplete="email"
-                            required
-                        >
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="organization_name">Organization</label>
-                        <input
-                            class="form-control"
-                            type="text"
-                            id="organization_name"
-                            name="organization_name"
-                            value="{{ organization_name }}"
-                            autocomplete="organization"
-                            maxlength="200"
-                            required
-                        >
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="purpose">How will you use the website data?</label>
-                        <textarea
-                            class="form-control"
-                            id="purpose"
-                            name="purpose"
-                            rows="6"
-                            maxlength="2000"
-                            required
-                        >{{ purpose }}</textarea>
-                    </div>
-
-                    <p class="privacy-submit-note">
-                        We use these details to review and administer research website access.
-                        See the <a href="{{ url_for('home.privacy') }}" target="_blank" rel="noopener">Privacy notice</a>
-                        before submitting.
-                    </p>
-
-                    <div class="auth-action-row">
-                        <button type="submit" class="btn btn-primary">Submit request</button>
-                        <a class="btn btn-outline-dark" href="{{ url_for('auth.login', next=next_url) }}">Already approved? Log in here</a>
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label class="form-label" for="full_name">Name</label>
+                <input
+                    class="form-control"
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    value="{{ full_name }}"
+                    autocomplete="name"
+                    maxlength="160"
+                    required
+                >
             </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="auth-researcher-image" role="img" aria-label="Plant scientist reviewing plant specimens"></div>
-        </div>
-    </div>
-</section>
 
-<p class="auth-secondary-note mt-3">
-    Need automated compliance checks for a marketplace, nursery platform,
-    ecommerce catalog, or internal system?
-    Use <a href="{{ url_for('api_page.api_index') }}">Enterprise</a>.
-</p>
+            <div class="mb-3">
+                <label class="form-label" for="email">Email address</label>
+                <input
+                    class="form-control"
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ email }}"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="organization_name">Organization</label>
+                <input
+                    class="form-control"
+                    type="text"
+                    id="organization_name"
+                    name="organization_name"
+                    value="{{ organization_name }}"
+                    autocomplete="organization"
+                    maxlength="200"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="purpose">How will you use the website data?</label>
+                <textarea
+                    class="form-control"
+                    id="purpose"
+                    name="purpose"
+                    rows="6"
+                    maxlength="2000"
+                    required
+                >{{ purpose }}</textarea>
+            </div>
+
+            <p class="privacy-submit-note">
+                We use these details to review and administer research website access.
+                See the <a href="{{ url_for('home.privacy') }}" target="_blank" rel="noopener">Privacy notice</a>
+                before submitting.
+            </p>
+
+            <div class="auth-action-row">
+                <button type="submit" class="btn btn-primary">Submit request</button>
+                <a class="btn btn-outline-dark" href="{{ url_for('auth.login', next=next_url) }}">Already approved? Log in here</a>
+            </div>
+        </form>
+        </div>
+    </section>
+
+    <div class="doc-definition">
+        <span class="doc-label">For organisations</span>
+        <p>
+            Need automated compliance checks for a marketplace, nursery platform, ecommerce catalogue
+            or internal system? See <a href="{{ url_for('api_page.api_index') }}">Enterprise</a>.
+        </p>
+    </div>
+</div>
 {% endblock %}

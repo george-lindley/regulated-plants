@@ -13,7 +13,8 @@
 
 /* Enterprise page: plain sections, no boxes (hairline rules only between them). */
 .api-code {
-   margin: 1rem 0 0;
+   max-width: 40rem;
+   margin: 0 0 1.5rem;
    padding: 0.9rem 1rem;
    border: 1px solid var(--border-light);
    border-radius: 0.5rem;
@@ -21,15 +22,6 @@
    font-size: 0.9rem;
    white-space: pre-wrap;
    overflow-wrap: anywhere;
-}
-
-.api-points {
-   margin: 0;
-   padding-left: 1.1rem;
-}
-
-.api-points li + li {
-   margin-top: 0.5rem;
 }
 
 .api-grid {
@@ -54,12 +46,6 @@
 
 .api-card p:last-child {
    margin-bottom: 0;
-}
-
-.api-section {
-   margin-top: 2.5rem;
-   padding-top: 2rem;
-   border-top: 1px solid var(--border-light);
 }
 
 .api-access-panel {
