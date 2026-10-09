@@ -736,13 +736,31 @@ document.addEventListener('DOMContentLoaded', function () {
         zoomControl: true
     });
 
-    // Esri World Light Gray Canvas: plain grey land and water, no vegetation or
-    // terrain, so the choropleth colours are the only colour on the map. Keyless.
-    // (CARTO Positron now needs an API key and serves an "API KEY REQUIRED" tile.)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-        maxZoom: 16
-    }).addTo(map);
+    // Basemap: no tiles. White sea (the container background, map.css) and plain
+    // grey land drawn from one static file of Natural Earth country outlines
+    // (public domain, 1:110m, Antarctica dropped, ~150KB), in a pane under our
+    // data. No API key, no third-party tile requests, and nothing on the map but
+    // our colours. Tile services tried: OSM (vegetation), CARTO (now needs a key),
+    // Esri Light Gray (grey sea).
+    map.createPane('basemap');
+    map.getPane('basemap').style.zIndex = 200;
+    map.getPane('basemap').style.pointerEvents = 'none';
+    fetch(MAP_CONFIG.basemapUrl || '/static/data/world-base.geojson')
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error(`basemap ${r.status}`))))
+        .then(world => {
+            L.geoJSON(world, {
+                pane: 'basemap',
+                interactive: false,
+                style: {
+                    fillColor: MAP_CONFIG.landColor || '#eceff2',
+                    fillOpacity: 1,
+                    color: MAP_CONFIG.landBorderColor || '#d3d8dd',
+                    weight: 0.6
+                }
+            }).addTo(map);
+        })
+        .catch(err => console.warn('Basemap unavailable:', err));
+    map.attributionControl.addAttribution('Outlines: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>');
 
     ensureNoListHatch();
 

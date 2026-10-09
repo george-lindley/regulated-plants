@@ -7,6 +7,7 @@
  #map {
     width: 100%;
     height: 500px;
+    background: #fff; /* the sea: there are no tiles (see map.js basemap) */
     transition: height 0.3s ease;
     border-radius: 0.25rem;
  }
@@ -66,9 +67,10 @@
     border-color: #adb5bd;
  }
 
- /* Esri Light Gray land colour: uncovered countries are just the base map. */
+ /* Plain land (MAP_CONFIG.landColor): uncovered countries are just the basemap. */
  .legend-swatch--none {
-    background: #e8e8e8;
+    background: #eceff2;
+    border-color: #d3d8dd;
  }
 
  @media (max-width: 768px) {

@@ -26,8 +26,14 @@ MAP_CONFIG.defaultColorRamps = [
 // so a country with a short list (Japan: 17) is clearly coloured, not near-white.
 MAP_CONFIG.minRegulatedShade = 2;
 
-// Covered region showing 0 species under the current level toggles.
-MAP_CONFIG.zeroCountColor = "#dee2e6";
+// Basemap (no tiles): white sea, plain grey land from static/data/world-base.geojson.
+MAP_CONFIG.basemapUrl = "/static/data/world-base.geojson";
+MAP_CONFIG.landColor = "#eceff2";
+MAP_CONFIG.landBorderColor = "#d3d8dd";
+
+// Covered region showing 0 species under the current level toggles. Darker than
+// the plain land so it does not read as "not yet covered".
+MAP_CONFIG.zeroCountColor = "#c9cfd6";
 
 // Countries reviewed and found to have no published list (no_published_list from
 // /api/region-weed-counts, e.g. Malaysia, UAE) are hatched; uncovered countries are not drawn.
