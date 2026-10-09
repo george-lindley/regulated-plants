@@ -23,8 +23,6 @@
 {% endblock %}
 
 {% block content %}
-{% set page_label = "Species" %}
-{% include "partials/page_eyebrow.html" %}
 {% if species %}
 <h1 class="page-title"><em>{{ species.canonical_name }}</em></h1>
 <p class="lead">
